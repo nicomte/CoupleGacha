@@ -8,8 +8,31 @@
    fill="none"
    version="1.1"
    id="svg1"
+   sodipodi:docname="select_challenge_heart.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.6467315"
+     inkscape:cx="333.08406"
+     inkscape:cy="299.0773"
+     inkscape:window-width="1920"
+     inkscape:window-height="1172"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
   <defs
      id="defs1" />
   <path
@@ -21,7 +44,7 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="path1"
-     style="fill:#ff1493;fill-opacity:1;stroke:#ff1493;stroke-opacity:1" />
+     style="fill:#ff1493;fill-opacity:1;stroke:#fae8ed;stroke-opacity:1;stroke-width:0.3;stroke-dasharray:none" />
   <g
      id="text1"
      style="font-size:2.8px;font-family:'Super Malibu';-inkscape-font-specification:'Super Malibu, Normal';text-align:center;text-anchor:middle;fill:#fae8ed;stroke:#fae8ed;stroke-width:0.03"

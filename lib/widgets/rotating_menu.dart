@@ -12,6 +12,8 @@ class RotatingMenu extends StatefulWidget{
     'assets/select_challenge_heart.svg',
   ];
 
+  static const centerHeart = 'assets/center_heart.svg';
+
   @override
   State<RotatingMenu> createState() => _RotatingMenuState();
 }
@@ -21,25 +23,56 @@ class _RotatingMenuState extends State<RotatingMenu> {
   int selectedIndex = 0;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Stack(
-      children: [
-        for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++)
-          _buildMenuItem(i)
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final circleCenterX = screenSize.width / 4;
+    final circleCenterY = screenSize.height / 2;
 
-  Widget _buildMenuItem(int index) {
+    final centerHeartWidth = screenSize.width / 10;
+    final centerHeartHeight = screenSize.height / 8;
+
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++) 
+            _buildMenuItem(
+              index: i,
+              screenWidth: screenSize.width,
+              screenHeight: screenSize.height,
+              circleCenterX: circleCenterX,
+              circleCenterY: circleCenterY
+            ),
+          Positioned(
+            left: circleCenterX + centerHeartWidth / 6,
+            top: circleCenterY - centerHeartHeight / 2,
+            child: SvgPicture.asset(
+              RotatingMenu.centerHeart,
+              height: centerHeartHeight,
+              width: centerHeartWidth,
+            ),
+          ) ,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required int index,
+    required double screenWidth,
+    required double screenHeight,
+    required double circleCenterX,
+    required double circleCenterY,
+  }) {
     //final isSelected = index == selectedIndex;
-    final circleCenterX = MediaQuery.of(context).size.width / 4;
-    final circleCenterY = MediaQuery.of(context).size.height / 2;
-    final angle = pi / 180 * 90 * index;
-    final width = MediaQuery.of(context).size.width / 5;
-    final height = MediaQuery.of(context).size.height / 2.5;
-    final radius = height / 1.7;
-    final offsetLeft = radius * cos(angle - pi / 2) + circleCenterX - width / 2;
-    final offsetTop = radius * sin(angle - pi / 2) + circleCenterY - height / 2;
+    // Location of current index "heart" on the circular menu in Radians
+    final angle = (pi * index) / 2;
+    final menuElementWidth = screenWidth / 5;
+    final menuElementHeight = screenHeight / 2;
+    // Size of the circular menu. Pretty sensitive to changes
+    final radius = menuElementHeight / 2;
+    final offsetLeft = radius * cos(angle - pi / 2) + circleCenterX - menuElementWidth / 2;
+    final offsetTop = radius * sin(angle - pi / 2) + circleCenterY - menuElementHeight / 2;
 
     return Positioned(
       left: offsetLeft,
@@ -48,7 +81,7 @@ class _RotatingMenuState extends State<RotatingMenu> {
         angle: angle,
         child: SvgPicture.asset(
           RotatingMenu.menuAssetPaths[index],
-          height: height,
+          height: menuElementHeight,
         )
       )
     );
