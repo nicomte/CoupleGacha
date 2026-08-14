@@ -1,8 +1,10 @@
+import 'package:couple_gacha/widgets/circle_geometry.dart';
+import 'package:couple_gacha/widgets/heart_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:math';
 
-class RotatingMenu extends StatefulWidget{
+class RotatingMenu extends StatefulWidget {
   const RotatingMenu({super.key});
 
   static const List<String> menuAssetPaths = [
@@ -19,39 +21,56 @@ class RotatingMenu extends StatefulWidget{
 }
 
 class _RotatingMenuState extends State<RotatingMenu> {
-
   int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final circleCenterX = screenSize.width / 4;
-    final circleCenterY = screenSize.height / 2;
+    final circleCenter = Offset(screenSize.width / 4, screenSize.height / 2);
+    final centerHeartSize = Size(screenSize.width / 13, screenSize.height / 7);
 
-    final centerHeartWidth = screenSize.width / 10;
-    final centerHeartHeight = screenSize.height / 8;
+    final menuElementWidthFactor = 4.0;
+    final menuElementHeightFactor = 2.5;
 
+    final menuElementSize = Size(
+      screenSize.width / menuElementWidthFactor,
+      screenSize.height / menuElementHeightFactor,
+    );
+
+    final geometry = CircleGeometry(
+      center: circleCenter,
+      radius: menuElementSize.height / 1.8,
+    );
 
     return Scaffold(
       body: Stack(
         children: [
-          for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++) 
+          HeartGlow(
+            geometry: geometry,
+            screenSize: screenSize,
+            scalingFactorWidth: menuElementWidthFactor,
+            scalingFactorHeight: menuElementHeightFactor,
+          ),
+          for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++)
             _buildMenuItem(
               index: i,
-              screenWidth: screenSize.width,
-              screenHeight: screenSize.height,
-              circleCenterX: circleCenterX,
-              circleCenterY: circleCenterY
+              geometry: geometry,
+              menuElementSize: menuElementSize,
             ),
-          Positioned(
-            left: circleCenterX + centerHeartWidth / 6,
-            top: circleCenterY - centerHeartHeight / 2,
-            child: SvgPicture.asset(
-              RotatingMenu.centerHeart,
-              height: centerHeartHeight,
-              width: centerHeartWidth,
-            ),
-          ) ,
+          Builder(
+            builder: (context) {
+              final topLeft = topLeftFor(geometry.center, centerHeartSize);
+              return Positioned(
+                left: topLeft.dx,
+                top: topLeft.dy,
+                child: SvgPicture.asset(
+                  RotatingMenu.centerHeart,
+                  height: centerHeartSize.height,
+                  width: centerHeartSize.width,
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -59,31 +78,25 @@ class _RotatingMenuState extends State<RotatingMenu> {
 
   Widget _buildMenuItem({
     required int index,
-    required double screenWidth,
-    required double screenHeight,
-    required double circleCenterX,
-    required double circleCenterY,
+    required CircleGeometry geometry,
+    required Size menuElementSize,
   }) {
-    //final isSelected = index == selectedIndex;
     // Location of current index "heart" on the circular menu in Radians
     final angle = (pi * index) / 2;
-    final menuElementWidth = screenWidth / 5;
-    final menuElementHeight = screenHeight / 2;
-    // Size of the circular menu. Pretty sensitive to changes
-    final radius = menuElementHeight / 2;
-    final offsetLeft = radius * cos(angle - pi / 2) + circleCenterX - menuElementWidth / 2;
-    final offsetTop = radius * sin(angle - pi / 2) + circleCenterY - menuElementHeight / 2;
+    final itemCenter = geometry.pointAt(angle);
+    final topLeft = topLeftFor(itemCenter, menuElementSize);
 
     return Positioned(
-      left: offsetLeft,
-      top: offsetTop,
+      left: topLeft.dx,
+      top: topLeft.dy,
       child: Transform.rotate(
         angle: angle,
         child: SvgPicture.asset(
           RotatingMenu.menuAssetPaths[index],
-          height: menuElementHeight,
-        )
-      )
+          height: menuElementSize.height,
+          width: menuElementSize.width,
+        ),
+      ),
     );
   }
 }
