@@ -5,24 +5,20 @@ import 'dart:math';
 
 class HeartGlow extends StatelessWidget {
   final CircleGeometry geometry;
-  final Size screenSize;
-  final double scalingFactorWidth;
-  final double scalingFactorHeight;
+  final Size baseSize;
   final double scalingFactorGlow = 1.2;
 
   const HeartGlow({
     super.key,
     required this.geometry,
-    required this.screenSize,
-    required this.scalingFactorWidth,
-    required this.scalingFactorHeight,
+    required this.baseSize
   });
 
   @override
   Widget build(BuildContext context) {
     final glowSize = Size(
-      screenSize.width / scalingFactorWidth * scalingFactorGlow,
-      screenSize.height / scalingFactorHeight * scalingFactorGlow,
+      baseSize.width * scalingFactorGlow,
+      baseSize.height * scalingFactorGlow,
     );
 
     final glowCenter = geometry.pointAt(pi / 2);

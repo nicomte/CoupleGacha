@@ -27,19 +27,17 @@ class _RotatingMenuState extends State<RotatingMenu> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final circleCenter = Offset(screenSize.width / 4, screenSize.height / 2);
-    final centerHeartSize = Size(screenSize.width / 13, screenSize.height / 7);
+    final diagonal = (sqrt(pow(screenSize.width, 2) + pow(screenSize.height, 2)));
 
-    final menuElementWidthFactor = 4.0;
-    final menuElementHeightFactor = 2.5;
+    final centerHeartHeight = diagonal / 16;
+    final centerHeartSize = sizeFromHeight(centerHeartHeight);
 
-    final menuElementSize = Size(
-      screenSize.width / menuElementWidthFactor,
-      screenSize.height / menuElementHeightFactor,
-    );
+    final menuElementHeight = diagonal / 5.5;
+    final menuElementSize = sizeFromHeight(menuElementHeight);
 
     final geometry = CircleGeometry(
       center: circleCenter,
-      radius: menuElementSize.height / 1.8,
+      radius: diagonal * 0.1,
     );
 
     return Scaffold(
@@ -47,9 +45,7 @@ class _RotatingMenuState extends State<RotatingMenu> {
         children: [
           HeartGlow(
             geometry: geometry,
-            screenSize: screenSize,
-            scalingFactorWidth: menuElementWidthFactor,
-            scalingFactorHeight: menuElementHeightFactor,
+            baseSize: menuElementSize
           ),
           for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++)
             _buildMenuItem(
