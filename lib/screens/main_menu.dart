@@ -11,6 +11,13 @@ class MainMenu extends StatefulWidget{
 class _MainMenuState extends State<MainMenu> {
   @override
   Widget build(BuildContext context) => Scaffold(
-    body: RotatingMenu(),
+    body: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: RotatingMenu()
+        )
+      ],
+    )
   );
 }

@@ -20,65 +20,115 @@ class RotatingMenu extends StatefulWidget {
   State<RotatingMenu> createState() => _RotatingMenuState();
 }
 
-class _RotatingMenuState extends State<RotatingMenu> {
-  int selectedIndex = 0;
+class _RotatingMenuState extends State<RotatingMenu>
+    with SingleTickerProviderStateMixin {
+  int _rotatingOffset = 0;
+  late final AnimationController _controller;
+  late final Animation<double> _angleAnimation;
+
+  static const double _stepAngle = pi / 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _angleAnimation = Tween<double>(
+      begin: 0,
+      end: _stepAngle,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _rotateMenuOptions() {
+    _controller.forward(from: 0).then((_) {
+      setState(() {
+        _rotatingOffset =
+            (_rotatingOffset - 1) % RotatingMenu.menuAssetPaths.length;
+      });
+      _controller.reset();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Define menu item sizes, scaling and location
     final screenSize = MediaQuery.of(context).size;
+    final screenDiagonal = (sqrt(
+      pow(screenSize.width, 2) + pow(screenSize.height, 2),
+    ));
     final circleCenter = Offset(screenSize.width / 4, screenSize.height / 2);
-    final diagonal = (sqrt(pow(screenSize.width, 2) + pow(screenSize.height, 2)));
 
-    final centerHeartHeight = diagonal / 16;
+    final centerHeartHeight = screenDiagonal / 16;
     final centerHeartSize = sizeFromHeight(centerHeartHeight);
 
-    final menuElementHeight = diagonal / 5.5;
+    final menuElementHeight = screenDiagonal / 5.5;
     final menuElementSize = sizeFromHeight(menuElementHeight);
 
     final geometry = CircleGeometry(
       center: circleCenter,
-      radius: diagonal * 0.1,
+      radius: screenDiagonal * 0.1,
     );
 
+    // Main element being built back to front: glow around selection, menu options, center heart
     return Scaffold(
-      body: Stack(
-        children: [
-          HeartGlow(
-            geometry: geometry,
-            baseSize: menuElementSize
-          ),
-          for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++)
-            _buildMenuItem(
-              index: i,
-              geometry: geometry,
-              menuElementSize: menuElementSize,
-            ),
-          Builder(
-            builder: (context) {
-              final topLeft = topLeftFor(geometry.center, centerHeartSize);
-              return Positioned(
-                left: topLeft.dx,
-                top: topLeft.dy,
-                child: SvgPicture.asset(
-                  RotatingMenu.centerHeart,
-                  height: centerHeartSize.height,
-                  width: centerHeartSize.width,
+      body: AnimatedBuilder(
+        animation: _angleAnimation,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              // Selected heart glow
+              HeartGlow(geometry: geometry, baseSize: menuElementSize),
+              // Element options
+              for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++)
+                _buildMenuItem(
+                  index: i,
+                  geometry: geometry,
+                  menuElementSize: menuElementSize,
+                  animatedAngleOffset: _angleAnimation.value
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+              // Center heart
+              Builder(
+                builder: (context) {
+                  final topLeft = topLeftFor(geometry.center, centerHeartSize);
+                  return Positioned(
+                    left: topLeft.dx,
+                    top: topLeft.dy,
+                    child: InkWell(
+                      onTap: _rotateMenuOptions,
+                      child: SvgPicture.asset(
+                        RotatingMenu.centerHeart,
+                        height: centerHeartSize.height,
+                        width: centerHeartSize.width,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        }
+      )
     );
   }
 
+  // Helper Widget to build individual menu options
   Widget _buildMenuItem({
     required int index,
     required CircleGeometry geometry,
     required Size menuElementSize,
+    required double animatedAngleOffset
   }) {
+    final assetIndex = (index + _rotatingOffset) % RotatingMenu.menuAssetPaths.length;
     // Location of current index "heart" on the circular menu in Radians
-    final angle = (pi * index) / 2;
+    final angle = (pi * index) / 2 + animatedAngleOffset;
     final itemCenter = geometry.pointAt(angle);
     final topLeft = topLeftFor(itemCenter, menuElementSize);
 
@@ -88,8 +138,13 @@ class _RotatingMenuState extends State<RotatingMenu> {
       child: Transform.rotate(
         angle: angle,
         child: SvgPicture.asset(
-          RotatingMenu.menuAssetPaths[index],
-          colorFilter: index == 1 ? const ColorFilter.mode(Color.fromARGB(30, 255, 255, 255), BlendMode.srcATop) : null,
+          RotatingMenu.menuAssetPaths[assetIndex],
+          colorFilter: index == 1
+              ? const ColorFilter.mode(
+                  Color.fromARGB(30, 255, 255, 255),
+                  BlendMode.srcATop,
+                )
+              : null,
           height: menuElementSize.height,
           width: menuElementSize.width,
         ),
