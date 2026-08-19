@@ -139,7 +139,7 @@ class _RotatingMenuState extends State<RotatingMenu>
         angle: angle,
         child: SvgPicture.asset(
           RotatingMenu.menuAssetPaths[assetIndex],
-          colorFilter: index == 1
+          colorFilter: index == 1 && _angleAnimation.value == 0
               ? const ColorFilter.mode(
                   Color.fromARGB(30, 255, 255, 255),
                   BlendMode.srcATop,
