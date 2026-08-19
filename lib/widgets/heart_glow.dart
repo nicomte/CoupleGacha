@@ -1,3 +1,4 @@
+import 'package:couple_gacha/methods/element_utils.dart';
 import 'package:couple_gacha/widgets/circle_geometry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';

@@ -1,3 +1,4 @@
+import 'package:couple_gacha/methods/element_utils.dart';
 import 'package:couple_gacha/widgets/circle_geometry.dart';
 import 'package:couple_gacha/widgets/heart_glow.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,14 @@ import 'package:flutter_svg/svg.dart';
 import 'dart:math';
 
 class RotatingMenu extends StatefulWidget {
-  const RotatingMenu({super.key});
+  const RotatingMenu({
+    super.key,
+    required this.screenSize,
+    required this.screenDiagonal
+    });
+
+  final Size screenSize;
+  final double screenDiagonal;
 
   static const List<String> menuAssetPaths = [
     'assets/check_rewards_heart.svg',
@@ -60,21 +68,17 @@ class _RotatingMenuState extends State<RotatingMenu>
   @override
   Widget build(BuildContext context) {
     // Define menu item sizes, scaling and location
-    final screenSize = MediaQuery.of(context).size;
-    final screenDiagonal = (sqrt(
-      pow(screenSize.width, 2) + pow(screenSize.height, 2),
-    ));
-    final circleCenter = Offset(screenSize.width / 4, screenSize.height / 2);
+    final circleCenter = Offset(widget.screenSize.width / 4, widget.screenSize.height / 2);
 
-    final centerHeartHeight = screenDiagonal / 16;
-    final centerHeartSize = sizeFromHeight(centerHeartHeight);
+    final centerHeartHeight = widget.screenDiagonal / 16;
+    final centerHeartSize = sizeFromHeight(centerHeartHeight, 1.11630569161);
 
-    final menuElementHeight = screenDiagonal / 5.5;
-    final menuElementSize = sizeFromHeight(menuElementHeight);
+    final menuElementHeight = widget.screenDiagonal / 5.5;
+    final menuElementSize = sizeFromHeight(menuElementHeight, 1.12487471524);
 
     final geometry = CircleGeometry(
       center: circleCenter,
-      radius: screenDiagonal * 0.1,
+      radius: widget.screenDiagonal * 0.1,
     );
 
     // Main element being built back to front: glow around selection, menu options, center heart
