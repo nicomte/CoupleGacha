@@ -1,5 +1,5 @@
 import 'package:couple_gacha/methods/element_utils.dart';
-import 'package:couple_gacha/widgets/circle_geometry.dart';
+import 'package:couple_gacha/widgets/main_menu/circle_geometry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:math';
@@ -23,7 +23,7 @@ class HeartGlow extends StatelessWidget {
     );
 
     final glowCenter = geometry.pointAt(pi / 2);
-    final topLeft = topLeftFor(glowCenter, glowSize);
+    final topLeft = topLeftCentered(glowCenter, glowSize);
     return Positioned(
       left: topLeft.dx,
       top: topLeft.dy,

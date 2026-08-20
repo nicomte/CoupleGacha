@@ -1,4 +1,4 @@
-import 'package:couple_gacha/widgets/rotating_menu.dart';
+import 'package:couple_gacha/widgets/main_menu/rotating_menu.dart';
 import 'package:couple_gacha/methods/element_utils.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -27,7 +27,7 @@ class _MainMenuState extends State<MainMenu> {
           ),
           Expanded(
             child: Builder(builder: (_) {
-              final height = screenDiagonal / 40;
+              final height = screenDiagonal / 15;
               return SvgPicture.asset('assets/heart_arrow.svg', height: height, width: sizeFromHeight(height / 5.5, 3.57721578342).width);
             })
           )

@@ -1,6 +1,6 @@
 import 'package:couple_gacha/methods/element_utils.dart';
-import 'package:couple_gacha/widgets/circle_geometry.dart';
-import 'package:couple_gacha/widgets/heart_glow.dart';
+import 'package:couple_gacha/widgets/main_menu/circle_geometry.dart';
+import 'package:couple_gacha/widgets/main_menu/heart_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:math';
@@ -101,7 +101,7 @@ class _RotatingMenuState extends State<RotatingMenu>
               // Center heart
               Builder(
                 builder: (context) {
-                  final topLeft = topLeftFor(geometry.center, centerHeartSize);
+                  final topLeft = topLeftCentered(geometry.center, centerHeartSize);
                   return Positioned(
                     left: topLeft.dx,
                     top: topLeft.dy,
@@ -134,7 +134,7 @@ class _RotatingMenuState extends State<RotatingMenu>
     // Location of current index "heart" on the circular menu in Radians
     final angle = (pi * index) / 2 + animatedAngleOffset;
     final itemCenter = geometry.pointAt(angle);
-    final topLeft = topLeftFor(itemCenter, menuElementSize);
+    final topLeft = topLeftCentered(itemCenter, menuElementSize);
 
     return Positioned(
       left: topLeft.dx,
