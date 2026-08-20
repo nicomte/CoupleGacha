@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget outlinedText(String text, {double? fontSize, required Color backgroundColor, Color? textColor, String? fontFamily}) {
+Widget outlinedText(String text, {required double fontSize, required Color backgroundColor, required Color textColor, required String fontFamily}) {
   return Stack(
     children: [
       Text(

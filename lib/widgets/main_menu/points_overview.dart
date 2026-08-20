@@ -25,16 +25,19 @@ class _PointsOverviewState extends State<PointsOverview> {
   Widget build(BuildContext context) {
     final pointsContainerSize = Size(
       widget.screenSize.width / 3,
-      widget.screenSize.height / 4,
+      widget.screenSize.height / 3.5,
     );
+    /*
     final backgroundOffset = widget.screenDiagonal * 0.005;
     final backgroundSize = Size(
       pointsContainerSize.width + backgroundOffset,
       pointsContainerSize.height + backgroundOffset,
     );
+    */
 
     return Stack(
       children: [
+        /*
         Positioned(
           left:
               widget.screenSize.width -
@@ -47,10 +50,11 @@ class _PointsOverviewState extends State<PointsOverview> {
             height: backgroundSize.height,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.tertiary,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(80)),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
             ),
           ),
         ),
+        */
         Positioned(
           left: widget.screenSize.width - pointsContainerSize.width,
           top: widget.screenSize.height - pointsContainerSize.height,
@@ -60,7 +64,8 @@ class _PointsOverviewState extends State<PointsOverview> {
             height: pointsContainerSize.height,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(80)),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
+              border: Border(top: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 10), left: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 10))
               //border: BoxBorder.all(color: Colors.black, width: 3)
             ),
             child: Column(
@@ -74,14 +79,14 @@ class _PointsOverviewState extends State<PointsOverview> {
                       'Points',
                       fontSize: Theme.of(
                         context,
-                      ).textTheme.headlineMedium?.fontSize,
-                      backgroundColor: Color(0xfffae8ed),
+                      ).textTheme.headlineMedium!.fontSize!,
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
                       textColor: Theme.of(
                         context,
-                      ).textTheme.headlineMedium?.color,
+                      ).textTheme.headlineMedium!.color!,
                       fontFamily: Theme.of(
                         context,
-                      ).textTheme.headlineMedium?.fontFamily,
+                      ).textTheme.headlineMedium!.fontFamily!,
                     ),
                   ),
                 ),
@@ -106,14 +111,14 @@ class _PointsOverviewState extends State<PointsOverview> {
                                 '$user - $points Points',
                                 fontSize: Theme.of(
                                   context,
-                                ).textTheme.bodyMedium?.fontSize,
-                                backgroundColor: Color(0xfffae8ed),
+                                ).textTheme.bodyMedium!.fontSize!,
+                                backgroundColor: Theme.of(context).colorScheme.tertiary,
                                 textColor: Theme.of(
                                   context,
-                                ).textTheme.bodyMedium?.color,
+                                ).textTheme.bodyMedium!.color!,
                                 fontFamily: Theme.of(
                                   context,
-                                ).textTheme.bodyMedium?.fontFamily,
+                                ).textTheme.bodyMedium!.fontFamily!,
                               ),
                             ),
                           ),
