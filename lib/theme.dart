@@ -12,10 +12,23 @@ class AppTheme{
     error: Color(0xFFBA1A1A),
     onError: Colors.white,
     surface: Color(0xFFFFFBFE),
-    onSurface: Color(0xFF1C1B1F)
+    onSurface: Color(0xFF1C1B1F),
+    tertiary: Color(0xfffae8ed)
   );
   static final ThemeData colorTheme = ThemeData(
     colorScheme: _scheme,
-    scaffoldBackgroundColor: const Color.fromARGB(255, 214, 135, 174)
+    scaffoldBackgroundColor: const Color.fromARGB(255, 214, 135, 174),
+    textTheme: const TextTheme(
+      headlineMedium: TextStyle(
+        fontFamily: 'super-malibu',
+        fontSize: 36,
+        color: Colors.black
+      ),
+      bodyMedium: TextStyle(
+        fontFamily: 'super-malibu',
+        fontSize: 30,
+        color: Colors.black
+      )
+    )
   );
 }

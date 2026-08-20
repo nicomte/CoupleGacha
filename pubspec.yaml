@@ -20,3 +20,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+  fonts:
+    - family: super-malibu
+      fonts:
+        - asset: fonts/SuperMalibu-Wp77v.ttf
