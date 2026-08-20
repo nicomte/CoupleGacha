@@ -9,8 +9,8 @@ class RotatingMenu extends StatefulWidget {
   const RotatingMenu({
     super.key,
     required this.screenSize,
-    required this.screenDiagonal
-    });
+    required this.screenDiagonal,
+  });
 
   final Size screenSize;
   final double screenDiagonal;
@@ -68,7 +68,10 @@ class _RotatingMenuState extends State<RotatingMenu>
   @override
   Widget build(BuildContext context) {
     // Define menu item sizes, scaling and location
-    final circleCenter = Offset(widget.screenSize.width / 4, widget.screenSize.height / 2);
+    final circleCenter = Offset(
+      widget.screenSize.width / 4,
+      widget.screenSize.height / 2,
+    );
 
     final centerHeartHeight = widget.screenDiagonal / 16;
     final centerHeartSize = sizeFromHeight(centerHeartHeight, 1.11630569161);
@@ -96,12 +99,15 @@ class _RotatingMenuState extends State<RotatingMenu>
                   index: i,
                   geometry: geometry,
                   menuElementSize: menuElementSize,
-                  animatedAngleOffset: _angleAnimation.value
+                  animatedAngleOffset: _angleAnimation.value,
                 ),
               // Center heart
               Builder(
                 builder: (context) {
-                  final topLeft = topLeftCentered(geometry.center, centerHeartSize);
+                  final topLeft = topLeftCentered(
+                    geometry.center,
+                    centerHeartSize,
+                  );
                   return Positioned(
                     left: topLeft.dx,
                     top: topLeft.dy,
@@ -116,10 +122,29 @@ class _RotatingMenuState extends State<RotatingMenu>
                   );
                 },
               ),
+              Builder(
+                builder: (_) {
+                  final size = sizeFromHeight(
+                    widget.screenDiagonal / 40,
+                    3.57721578342,
+                  );
+                  final itemCenter = geometry.pointAt(pi / 2);
+                  final topLeft = topLeftCentered(itemCenter, size);
+                  return Positioned(
+                    top: topLeft.dy,
+                    left: topLeft.dx + widget.screenDiagonal / 7 ,
+                    child: SvgPicture.asset(
+                      'assets/heart_arrow.svg',
+                      height: size.height,
+                      width: size.width,
+                    ),
+                  );
+                },
+              ),
             ],
           );
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -128,9 +153,10 @@ class _RotatingMenuState extends State<RotatingMenu>
     required int index,
     required CircleGeometry geometry,
     required Size menuElementSize,
-    required double animatedAngleOffset
+    required double animatedAngleOffset,
   }) {
-    final assetIndex = (index + _rotatingOffset) % RotatingMenu.menuAssetPaths.length;
+    final assetIndex =
+        (index + _rotatingOffset) % RotatingMenu.menuAssetPaths.length;
     // Location of current index "heart" on the circular menu in Radians
     final angle = (pi * index) / 2 + animatedAngleOffset;
     final itemCenter = geometry.pointAt(angle);
