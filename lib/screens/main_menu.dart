@@ -1,3 +1,4 @@
+import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +23,9 @@ class _MainMenuState extends State<MainMenu> {
         children: [
           RotatingMenu(screenSize: screenSize, screenDiagonal: screenDiagonal),
           PointsOverview(
-            screenSize: screenSize,
-            screenDiagonal: screenDiagonal,
+            screenSize: screenSize
           ),
+          ChallengesList(screenSize: screenSize)
         ],
       ),
     );

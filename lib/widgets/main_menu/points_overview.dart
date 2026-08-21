@@ -1,17 +1,15 @@
-import 'package:couple_gacha/widgets/main_menu/outlined_text.dart';
+import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 
 class PointsOverview extends StatefulWidget {
   final Size screenSize;
-  final double screenDiagonal;
 
   const PointsOverview({
     super.key,
-    required this.screenSize,
-    required this.screenDiagonal,
+    required this.screenSize
   });
 
-  static const List<(String, int)> users = [
+  static const List<(String, int)> _users = [
     ('Player 1', 100),
     ('Player 2', 100),
   ];
@@ -27,111 +25,90 @@ class _PointsOverviewState extends State<PointsOverview> {
       widget.screenSize.width / 3,
       widget.screenSize.height / 3.5,
     );
-    /*
-    final backgroundOffset = widget.screenDiagonal * 0.005;
-    final backgroundSize = Size(
-      pointsContainerSize.width + backgroundOffset,
-      pointsContainerSize.height + backgroundOffset,
-    );
-    */
 
-    return Stack(
-      children: [
-        /*
-        Positioned(
-          left:
-              widget.screenSize.width -
-              (pointsContainerSize.width + backgroundOffset),
-          top:
-              widget.screenSize.height -
-              (pointsContainerSize.height + backgroundOffset),
-          child: Container(
-            width: backgroundSize.width,
-            height: backgroundSize.height,
-            decoration: BoxDecoration(
+    return Positioned(
+      left: widget.screenSize.width - pointsContainerSize.width,
+      top: widget.screenSize.height - pointsContainerSize.height,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        width: pointsContainerSize.width,
+        height: pointsContainerSize.height,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
+          border: Border(
+            top: BorderSide(
               color: Theme.of(context).colorScheme.tertiary,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
+              width: 10,
+            ),
+            left: BorderSide(
+              color: Theme.of(context).colorScheme.tertiary,
+              width: 10,
             ),
           ),
         ),
-        */
-        Positioned(
-          left: widget.screenSize.width - pointsContainerSize.width,
-          top: widget.screenSize.height - pointsContainerSize.height,
-          child: Container(
-            clipBehavior: Clip.antiAlias,
-            width: pointsContainerSize.width,
-            height: pointsContainerSize.height,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
-              border: Border(top: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 10), left: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 10))
-              //border: BoxBorder.all(color: Colors.black, width: 3)
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                    child: outlinedText(
-                      'Points',
-                      fontSize: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium!.fontSize!,
-                      backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      textColor: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium!.color!,
-                      fontFamily: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium!.fontFamily!,
-                    ),
-                  ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 1,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: outlinedText(
+                  'Points',
+                  fontSize: Theme.of(
+                    context,
+                  ).textTheme.headlineMedium!.fontSize!,
+                  backgroundColor: Theme.of(context).colorScheme.tertiary,
+                  textColor: Theme.of(context).textTheme.headlineMedium!.color!,
+                  fontFamily: Theme.of(
+                    context,
+                  ).textTheme.headlineMedium!.fontFamily!,
                 ),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ...PointsOverview.users.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final user = entry.value.$1;
-                        final points = entry.value.$2;
-                        return Expanded(
-                          child: Container(
-                            color: index % 2 == 0
-                                ? Theme.of(context).colorScheme.secondary
-                                : null,
-                            alignment: Alignment.center,
-                            child: FittedBox(
-                              fit: BoxFit.contain,
-                              child: outlinedText(
-                                '$user - $points Points',
-                                fontSize: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium!.fontSize!,
-                                backgroundColor: Theme.of(context).colorScheme.tertiary,
-                                textColor: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium!.color!,
-                                fontFamily: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium!.fontFamily!,
-                              ),
-                            ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ...PointsOverview._users.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final user = entry.value.$1;
+                    final points = entry.value.$2;
+                    return Expanded(
+                      child: Container(
+                        color: index % 2 == 0
+                            ? Theme.of(context).colorScheme.secondary
+                            : null,
+                        alignment: Alignment.center,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: outlinedText(
+                            '$user - $points Points',
+                            fontSize: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium!.fontSize!,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.tertiary,
+                            textColor: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium!.color!,
+                            fontFamily: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium!.fontFamily!,
                           ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

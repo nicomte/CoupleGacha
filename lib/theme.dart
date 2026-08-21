@@ -21,7 +21,7 @@ class AppTheme{
     textTheme: const TextTheme(
       headlineMedium: TextStyle(
         fontFamily: 'super-malibu',
-        fontSize: 36,
+        fontSize: 56,
         color: Colors.black
       ),
       bodyMedium: TextStyle(

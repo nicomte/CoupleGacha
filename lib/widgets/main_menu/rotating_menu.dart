@@ -15,14 +15,14 @@ class RotatingMenu extends StatefulWidget {
   final Size screenSize;
   final double screenDiagonal;
 
-  static const List<String> menuAssetPaths = [
+  static const List<String> _menuAssetPaths = [
     'assets/check_rewards_heart.svg',
     'assets/player_settings_heart.svg',
     'assets/redeem_points_heart.svg',
     'assets/select_challenge_heart.svg',
   ];
 
-  static const centerHeart = 'assets/center_heart.svg';
+  static const _centerHeart = 'assets/center_heart.svg';
 
   @override
   State<RotatingMenu> createState() => _RotatingMenuState();
@@ -59,7 +59,7 @@ class _RotatingMenuState extends State<RotatingMenu>
     _controller.forward(from: 0).then((_) {
       setState(() {
         _rotatingOffset =
-            (_rotatingOffset - 1) % RotatingMenu.menuAssetPaths.length;
+            (_rotatingOffset - 1) % RotatingMenu._menuAssetPaths.length;
       });
       _controller.reset();
     });
@@ -94,7 +94,7 @@ class _RotatingMenuState extends State<RotatingMenu>
               // Selected heart glow
               HeartGlow(geometry: geometry, baseSize: menuElementSize),
               // Element options
-              for (int i = 0; i < RotatingMenu.menuAssetPaths.length; i++)
+              for (int i = 0; i < RotatingMenu._menuAssetPaths.length; i++)
                 _buildMenuItem(
                   index: i,
                   geometry: geometry,
@@ -114,7 +114,7 @@ class _RotatingMenuState extends State<RotatingMenu>
                     child: InkWell(
                       onTap: _rotateMenuOptions,
                       child: SvgPicture.asset(
-                        RotatingMenu.centerHeart,
+                        RotatingMenu._centerHeart,
                         height: centerHeartSize.height,
                         width: centerHeartSize.width,
                       ),
@@ -156,7 +156,7 @@ class _RotatingMenuState extends State<RotatingMenu>
     required double animatedAngleOffset,
   }) {
     final assetIndex =
-        (index + _rotatingOffset) % RotatingMenu.menuAssetPaths.length;
+        (index + _rotatingOffset) % RotatingMenu._menuAssetPaths.length;
     // Location of current index "heart" on the circular menu in Radians
     final angle = (pi * index) / 2 + animatedAngleOffset;
     final itemCenter = geometry.pointAt(angle);
@@ -168,8 +168,8 @@ class _RotatingMenuState extends State<RotatingMenu>
       child: Transform.rotate(
         angle: angle,
         child: SvgPicture.asset(
-          RotatingMenu.menuAssetPaths[assetIndex],
-          colorFilter: index == 1 && _angleAnimation.value == 0
+          RotatingMenu._menuAssetPaths[assetIndex],
+          colorFilter: index == 1 && !_controller.isAnimating
               ? const ColorFilter.mode(
                   Color.fromARGB(30, 255, 255, 255),
                   BlendMode.srcATop,
