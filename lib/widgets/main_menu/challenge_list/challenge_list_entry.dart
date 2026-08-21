@@ -1,4 +1,5 @@
 // challenges_list_entry.dart
+import 'package:couple_gacha/widgets/main_menu/challenge_list/redeem_challenge_button.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/scrolling_area.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,6 @@ class ChallengesListEntry extends StatefulWidget {
 
 class _StateChallengesListEntry extends State<ChallengesListEntry>
     with TickerProviderStateMixin {
-
   // --- highlight width expansion ---
   static const double _restingWidthFactor = 0.85;
   late final AnimationController _highlightController;
@@ -80,23 +80,18 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
                 widthFactor: _widthFactor.value,
                 child: child,
               ),
-              if (widget.isHighlighted)
-                Positioned(
-                  right: 20,
-                  bottom: -12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+              Positioned(
+                right: 20,
+                bottom: -12,
+                  child: AnimatedOpacity(
+                    opacity: widget.isHighlighted ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 100),
+                    child: RedeemChallengeButton(
+                      challengesListSizeHeight:
+                          widget.challengesListSize.height,
                     ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(50),
-                      border: BoxBorder.all(color: Theme.of(context).colorScheme.tertiary, width: 3)
-                    ),
-                    child: outlinedText('Redeem?', fontSize: widget.challengesListSize.height * 0.05, backgroundColor: Theme.of(context).colorScheme.tertiary, textColor: Theme.of(context).textTheme.labelMedium!.color!, fontFamily: Theme.of(context).textTheme.labelMedium!.fontFamily!),
                   ),
-                ),
+              ),
             ],
           );
         },
@@ -147,7 +142,10 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
               const SizedBox(width: 8),
               Expanded(
                 flex: 5,
-                child: ScrollingArea(entryText: widget.entryText, textStyle: widget.textStyle)
+                child: ScrollingArea(
+                  entryText: widget.entryText,
+                  textStyle: widget.textStyle,
+                ),
               ),
             ],
           ),
