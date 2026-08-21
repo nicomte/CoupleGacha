@@ -1,4 +1,5 @@
 // challenges_list_entry.dart
+import 'package:couple_gacha/widgets/main_menu/challenge_list/scrolling_area.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 
@@ -24,9 +25,6 @@ class ChallengesListEntry extends StatefulWidget {
 
 class _StateChallengesListEntry extends State<ChallengesListEntry>
     with TickerProviderStateMixin {
-  // --- marquee scroll ---
-  late final AnimationController _scrollController;
-  double? _lastDistance;
 
   // --- highlight width expansion ---
   static const double _restingWidthFactor = 0.85;
@@ -37,11 +35,9 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
   void initState() {
     super.initState();
 
-    _scrollController = AnimationController(vsync: this);
-
     _highlightController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 50),
+      duration: const Duration(milliseconds: 100),
       value: widget.isHighlighted ? 1 : 0,
     );
     _widthFactor = Tween<double>(begin: _restingWidthFactor, end: 1.0).animate(
@@ -63,24 +59,8 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _highlightController.dispose();
     super.dispose();
-  }
-
-  void _updateScrolling(double distance) {
-    if (_lastDistance == distance) return;
-    _lastDistance = distance;
-
-    if (distance <= 0) {
-      _scrollController.stop();
-      return;
-    }
-
-    _scrollController.duration = Duration(
-      milliseconds: (distance / 50 * 1000).round(),
-    );
-    _scrollController.repeat();
   }
 
   @override
@@ -114,7 +94,7 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
                       borderRadius: BorderRadius.circular(50),
                       border: BoxBorder.all(color: Theme.of(context).colorScheme.tertiary, width: 3)
                     ),
-                    child: outlinedText('Redeem?', fontSize: widget.challengesListSize.height *0.05, backgroundColor: Theme.of(context).colorScheme.tertiary, textColor: Theme.of(context).textTheme.labelMedium!.color!, fontFamily: Theme.of(context).textTheme.labelMedium!.fontFamily!),
+                    child: outlinedText('Redeem?', fontSize: widget.challengesListSize.height * 0.05, backgroundColor: Theme.of(context).colorScheme.tertiary, textColor: Theme.of(context).textTheme.labelMedium!.color!, fontFamily: Theme.of(context).textTheme.labelMedium!.fontFamily!),
                   ),
                 ),
             ],
@@ -167,65 +147,7 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
               const SizedBox(width: 8),
               Expanded(
                 flex: 5,
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    final fontSize = constraints.maxHeight * 0.5;
-                    final painter = TextPainter(
-                      text: TextSpan(
-                        text: widget.entryText,
-                        style: TextStyle(
-                          fontFamily: widget.textStyle.fontFamily,
-                          fontSize: fontSize,
-                          foreground: Paint()
-                            ..style = PaintingStyle.stroke
-                            ..strokeWidth = 2,
-                        ),
-                      ),
-                      textDirection: TextDirection.ltr,
-                      maxLines: 1,
-                    )..layout(maxWidth: double.infinity);
-
-                    final naturalWidth = painter.width;
-                    final distance =
-                        naturalWidth -
-                        constraints.maxWidth.clamp(0.0, double.infinity);
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) _updateScrolling(distance);
-                    });
-
-                    return ClipRect(
-                      child: SizedBox(
-                        width: constraints.maxWidth,
-                        child: AnimatedBuilder(
-                          animation: _scrollController,
-                          builder: (context, child) {
-                            return Transform.translate(
-                              offset: Offset(
-                                -_scrollController.value * distance,
-                                0,
-                              ),
-                              child: child,
-                            );
-                          },
-                          child: OverflowBox(
-                            maxWidth: double.infinity,
-                            alignment: Alignment.centerLeft,
-                            child: outlinedText(
-                              widget.entryText,
-                              fontSize: fontSize,
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.tertiary,
-                              textColor: widget.textStyle.color!,
-                              fontFamily: widget.textStyle.fontFamily!,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                child: ScrollingArea(entryText: widget.entryText, textStyle: widget.textStyle)
               ),
             ],
           ),
