@@ -2,8 +2,8 @@
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 
-class ChallengesListTitleEntry extends StatelessWidget {
-  const ChallengesListTitleEntry({
+class ChallengesListTitle extends StatelessWidget {
+  const ChallengesListTitle({
     super.key,
     required this.challengesListSize,
     required this.titleText,
@@ -21,7 +21,7 @@ class ChallengesListTitleEntry extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      height: challengesListSize.height * 0.15,
+      height: challengesListSize.height * 0.3,
       alignment: Alignment.centerLeft,
       padding: EdgeInsets.symmetric(horizontal: padding),
       decoration: BoxDecoration(

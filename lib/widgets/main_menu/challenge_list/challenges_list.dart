@@ -25,7 +25,7 @@ class _ChallengesListState extends State<ChallengesList> {
   Widget build(BuildContext context) {
     final challengesListSize = Size(
       widget.screenSize.width / 3,
-      widget.screenSize.height / 2,
+      widget.screenSize.height / 3,
     );
 
     void toggleLength() {
@@ -44,8 +44,9 @@ class _ChallengesListState extends State<ChallengesList> {
           onTap: toggleLength,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ChallengesListTitleEntry(
+              ChallengesListTitle(
                 challengesListSize: challengesListSize,
                 titleText: 'Active Challenges',
                 textStyle: Theme.of(context).textTheme.headlineMedium!,

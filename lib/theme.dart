@@ -28,6 +28,11 @@ class AppTheme{
         fontFamily: 'super-malibu',
         fontSize: 30,
         color: Colors.black
+      ),
+      labelMedium: TextStyle(
+        fontFamily: 'super-malibu',
+        fontSize: 20,
+        color: Colors.black
       )
     )
   );

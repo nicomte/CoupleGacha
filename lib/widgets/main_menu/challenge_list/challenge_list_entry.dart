@@ -41,7 +41,7 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
 
     _highlightController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 50),
       value: widget.isHighlighted ? 1 : 0,
     );
     _widthFactor = Tween<double>(begin: _restingWidthFactor, end: 1.0).animate(
@@ -93,14 +93,36 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
       child: AnimatedBuilder(
         animation: _widthFactor,
         builder: (context, child) {
-          return FractionallySizedBox(
-            widthFactor: _widthFactor.value,
-            child: child,
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              FractionallySizedBox(
+                widthFactor: _widthFactor.value,
+                child: child,
+              ),
+              if (widget.isHighlighted)
+                Positioned(
+                  right: 20,
+                  bottom: -12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondary,
+                      borderRadius: BorderRadius.circular(50),
+                      border: BoxBorder.all(color: Theme.of(context).colorScheme.tertiary, width: 3)
+                    ),
+                    child: outlinedText('Redeem?', fontSize: widget.challengesListSize.height *0.05, backgroundColor: Theme.of(context).colorScheme.tertiary, textColor: Theme.of(context).textTheme.labelMedium!.color!, fontFamily: Theme.of(context).textTheme.labelMedium!.fontFamily!),
+                  ),
+                ),
+            ],
           );
         },
         child: Container(
           width: double.infinity,
-          height: widget.challengesListSize.height * 0.15,
+          height: widget.challengesListSize.height * 0.2,
           alignment: Alignment.centerLeft,
           padding: EdgeInsets.symmetric(horizontal: padding),
           decoration: BoxDecoration(
@@ -126,6 +148,7 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Expanded(
                 flex: 1,
@@ -141,6 +164,7 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
                   },
                 ),
               ),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 5,
                 child: LayoutBuilder(
