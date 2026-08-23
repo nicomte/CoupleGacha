@@ -3,9 +3,12 @@ import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list_ti
 import 'package:flutter/material.dart';
 
 class ChallengesList extends StatefulWidget {
-  const ChallengesList({super.key, required this.screenSize});
+  const ChallengesList({super.key, required this.screenSize, required this.activeChallenge, required this.activeMenu});
 
   final Size screenSize;
+  final int activeChallenge;
+  final int activeMenu;
+  
   static const List<(String, String)> _usersChallenges = [
     ('Player 1', 'test kurzer text'),
     (
