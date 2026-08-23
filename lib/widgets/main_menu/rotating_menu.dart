@@ -1,6 +1,7 @@
 import 'package:couple_gacha/methods/element_utils.dart';
 import 'package:couple_gacha/widgets/main_menu/circle_geometry.dart';
 import 'package:couple_gacha/widgets/main_menu/heart_glow.dart';
+import 'package:couple_gacha/widgets/main_menu/main_menu_enums.dart';
 import 'package:couple_gacha/widgets/util/assets_index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -17,8 +18,9 @@ class RotatingMenu extends StatefulWidget {
 
   final Size screenSize;
   final double screenDiagonal;
-  final ({int menuOffset, int rotationDirection}) rotatingMenuData;
-  final int activeMenu;
+  final ({int menuOffset, RotationDirection rotationDirection})
+  rotatingMenuData;
+  final ActiveMenu activeMenu;
 
   static const _centerHeart = 'assets/center_heart.svg';
 
@@ -28,7 +30,7 @@ class RotatingMenu extends StatefulWidget {
 
 class _RotatingMenuState extends State<RotatingMenu>
     with SingleTickerProviderStateMixin {
-  // This Widget gets the rotatingOffset, which defines the order of menu items, from it's parent.
+  // This Widget gets the rotatingOffset, which defines the order of menu options, from it's parent.
   // To avoid immediate updates of the menu option positions, they actually base their position on _displayOffset.
   // The animation starts when the parent passes an updated rotatingOffset and only once the animation is over, does rotatingOffset get assigned to displayOffset.
   int _displayOffset = 0;
@@ -47,14 +49,18 @@ class _RotatingMenuState extends State<RotatingMenu>
       duration: const Duration(milliseconds: 400),
     );
 
-    _animationProgress = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _animationProgress = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void didUpdateWidget(covariant RotatingMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.rotatingMenuData.menuOffset != widget.rotatingMenuData.menuOffset) {
+    if (oldWidget.rotatingMenuData.menuOffset !=
+        widget.rotatingMenuData.menuOffset) {
       _rotateMenuOptions();
     }
   }
@@ -108,7 +114,13 @@ class _RotatingMenuState extends State<RotatingMenu>
                   index: i,
                   geometry: geometry,
                   menuElementSize: menuElementSize,
-                  animatedAngleOffset: _animationProgress.value * _stepAngle * widget.rotatingMenuData.rotationDirection,
+                  animatedAngleOffset:
+                      _animationProgress.value *
+                      _stepAngle *
+                      (widget.rotatingMenuData.rotationDirection ==
+                              RotationDirection.clockwise
+                          ? 1
+                          : -1),
                 ),
               // Center heart
               Builder(
@@ -120,13 +132,10 @@ class _RotatingMenuState extends State<RotatingMenu>
                   return Positioned(
                     left: topLeft.dx,
                     top: topLeft.dy,
-                    child: InkWell(
-                      onTap: _rotateMenuOptions,
-                      child: SvgPicture.asset(
-                        RotatingMenu._centerHeart,
-                        height: centerHeartSize.height,
-                        width: centerHeartSize.width,
-                      ),
+                    child: SvgPicture.asset(
+                      RotatingMenu._centerHeart,
+                      height: centerHeartSize.height,
+                      width: centerHeartSize.width,
                     ),
                   );
                 },
@@ -178,9 +187,12 @@ class _RotatingMenuState extends State<RotatingMenu>
         angle: angle,
         child: SvgPicture.asset(
           AssetsIndex.menuAssetPaths[assetIndex],
-          colorFilter: index == 1 && !_controller.isAnimating
+          colorFilter:
+              index == 1 &&
+                  !_controller.isAnimating &&
+                  widget.activeMenu == ActiveMenu.rotatingMenu
               ? const ColorFilter.mode(
-                  Color.fromARGB(30, 255, 255, 255),
+                  Color.fromARGB(125, 255, 255, 255),
                   BlendMode.srcATop,
                 )
               : null,

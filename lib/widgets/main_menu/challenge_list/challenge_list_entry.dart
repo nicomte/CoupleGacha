@@ -105,7 +105,7 @@ class _StateChallengesListEntry extends State<ChallengesListEntry>
               topLeft: Radius.circular(50),
               bottomLeft: Radius.circular(50),
             ),
-            color: Theme.of(context).colorScheme.primary,
+            color: widget.isHighlighted ? Color.fromARGB(255, 255, 125, 190) : Theme.of(context).colorScheme.primary,
             border: Border(
               top: BorderSide(
                 color: Theme.of(context).colorScheme.tertiary,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/keyboard_input_source.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
+import 'package:couple_gacha/widgets/main_menu/main_menu_enums.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu.dart';
 import 'package:couple_gacha/widgets/util/assets_index.dart';
@@ -17,18 +18,19 @@ class MainMenu extends StatefulWidget {
 }
 
 class _MainMenuState extends State<MainMenu> {
-
   late final InputSource _inputSource;
   StreamSubscription<NavInput>? _subscription;
 
-  // rotationDirection 1 = forwards, -1 = backwards
-  ({int menuOffset, int rotationDirection}) _rotatingMenuData = (menuOffset: 0, rotationDirection: 1);
+  ({int menuOffset, RotationDirection rotationDirection}) _rotatingMenuData = (
+    menuOffset: 0,
+    rotationDirection: RotationDirection.clockwise,
+  );
 
   int _activeChallenge = 0;
-  int _activeMenu = 0;
+  ActiveMenu _activeMenu = ActiveMenu.rotatingMenu;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _inputSource = KeyboardInputSource();
     _subscription = _inputSource.events.listen(inputProcessor);
@@ -36,16 +38,38 @@ class _MainMenuState extends State<MainMenu> {
 
   void inputProcessor(NavInput input) {
     setState(() {
-      switch (input){
+      switch (input) {
         case NavInput.up:
-          _rotatingMenuData = (menuOffset: (_rotatingMenuData.menuOffset + 1) % AssetsIndex.menuAssetPaths.length, rotationDirection: -1);
+          if (_activeMenu == ActiveMenu.rotatingMenu) {
+            _rotatingMenuData = (
+              menuOffset:
+                  (_rotatingMenuData.menuOffset + 1) %
+                  AssetsIndex.menuAssetPaths.length,
+              rotationDirection: RotationDirection.counterClockwise,
+            );
+          } else {
+            _activeChallenge = _toggleActiveChallenge();
+          }
           break;
+
         case NavInput.down:
-          _rotatingMenuData = (menuOffset: (_rotatingMenuData.menuOffset - 1) % AssetsIndex.menuAssetPaths.length, rotationDirection: 1);
+          if (_activeMenu == ActiveMenu.rotatingMenu) {
+            _rotatingMenuData = (
+              menuOffset:
+                  (_rotatingMenuData.menuOffset - 1) %
+                  AssetsIndex.menuAssetPaths.length,
+              rotationDirection: RotationDirection.clockwise,
+            );
+          } else {
+            _activeChallenge = _toggleActiveChallenge();
+          }
           break;
+
         case NavInput.left:
+          _activeMenu = _toggleActiveMenu();
           break;
         case NavInput.right:
+          _activeMenu = _toggleActiveMenu();
           break;
         case NavInput.select:
           break;
@@ -53,6 +77,23 @@ class _MainMenuState extends State<MainMenu> {
           break;
       }
     });
+  }
+
+  ActiveMenu _toggleActiveMenu() {
+    return _activeMenu == ActiveMenu.rotatingMenu
+        ? ActiveMenu.challengesList
+        : ActiveMenu.rotatingMenu;
+  }
+
+  int _toggleActiveChallenge() {
+    return _activeChallenge == 0 ? 1 : 0;
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    _inputSource.dispose();
+    super.dispose();
   }
 
   @override
@@ -64,11 +105,18 @@ class _MainMenuState extends State<MainMenu> {
     return Scaffold(
       body: Stack(
         children: [
-          RotatingMenu(screenSize: screenSize, screenDiagonal: screenDiagonal, rotatingMenuData: _rotatingMenuData, activeMenu: _activeMenu),
-          PointsOverview(
-            screenSize: screenSize
+          RotatingMenu(
+            screenSize: screenSize,
+            screenDiagonal: screenDiagonal,
+            rotatingMenuData: _rotatingMenuData,
+            activeMenu: _activeMenu,
           ),
-          ChallengesList(screenSize: screenSize, activeChallenge: _activeChallenge, activeMenu: _activeMenu)
+          PointsOverview(screenSize: screenSize),
+          ChallengesList(
+            screenSize: screenSize,
+            activeChallenge: _activeChallenge,
+            activeMenu: _activeMenu,
+          ),
         ],
       ),
     );

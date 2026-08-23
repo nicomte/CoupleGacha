@@ -1,13 +1,19 @@
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenge_list_entry.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list_title.dart';
+import 'package:couple_gacha/widgets/main_menu/main_menu_enums.dart';
 import 'package:flutter/material.dart';
 
 class ChallengesList extends StatefulWidget {
-  const ChallengesList({super.key, required this.screenSize, required this.activeChallenge, required this.activeMenu});
+  const ChallengesList({
+    super.key,
+    required this.screenSize,
+    required this.activeChallenge,
+    required this.activeMenu,
+  });
 
   final Size screenSize;
   final int activeChallenge;
-  final int activeMenu;
+  final ActiveMenu activeMenu;
 
   static const List<(String, String)> _usersChallenges = [
     ('Player 1', 'test kurzer text'),
@@ -23,7 +29,6 @@ class ChallengesList extends StatefulWidget {
 
 class _ChallengesListState extends State<ChallengesList> {
 
-  bool isHighlighted = false;
   @override
   Widget build(BuildContext context) {
     final challengesListSize = Size(
@@ -31,43 +36,32 @@ class _ChallengesListState extends State<ChallengesList> {
       widget.screenSize.height / 3,
     );
 
-    void toggleLength() {
-      setState(() {
-        isHighlighted = isHighlighted ? false : true;
-      });
-    }
-
     return Positioned(
       left: widget.screenSize.width - challengesListSize.width,
       child: SizedBox(
         width: challengesListSize.width,
         height: challengesListSize.height,
-        child: InkWell(
-          onTap: toggleLength,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ChallengesListTitle(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ChallengesListTitle(
+              challengesListSize: challengesListSize,
+              titleText: 'Active Challenges',
+              textStyle: Theme.of(context).textTheme.headlineMedium!,
+            ),
+            ...ChallengesList._usersChallenges.asMap().entries.map(
+              (entry) => ChallengesListEntry(
                 challengesListSize: challengesListSize,
-                titleText: 'Active Challenges',
-                textStyle: Theme.of(context).textTheme.headlineMedium!,
-              ),
-              ChallengesListEntry(
-                challengesListSize: challengesListSize,
-                entryText: ChallengesList._usersChallenges[0].$2,
+                entryText: entry.value.$2,
+                playerName: entry.value.$1,
                 textStyle: Theme.of(context).textTheme.bodyMedium!,
-                playerName: '${ChallengesList._usersChallenges[0].$1} :',
-                isHighlighted: isHighlighted,
+                isHighlighted:
+                    entry.key == widget.activeChallenge &&
+                    widget.activeMenu == ActiveMenu.challengesList,
               ),
-              ChallengesListEntry(
-                challengesListSize: challengesListSize,
-                entryText: ChallengesList._usersChallenges[1].$2,
-                textStyle: Theme.of(context).textTheme.bodyMedium!,
-                playerName: '${ChallengesList._usersChallenges[1].$1} :'
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
