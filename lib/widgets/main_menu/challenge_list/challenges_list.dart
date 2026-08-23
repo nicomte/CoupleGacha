@@ -8,7 +8,7 @@ class ChallengesList extends StatefulWidget {
   final Size screenSize;
   final int activeChallenge;
   final int activeMenu;
-  
+
   static const List<(String, String)> _usersChallenges = [
     ('Player 1', 'test kurzer text'),
     (
@@ -34,7 +34,6 @@ class _ChallengesListState extends State<ChallengesList> {
     void toggleLength() {
       setState(() {
         isHighlighted = isHighlighted ? false : true;
-        print(isHighlighted);
       });
     }
 

@@ -5,6 +5,7 @@ import 'package:couple_gacha/navigation/keyboard_input_source.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu.dart';
+import 'package:couple_gacha/widgets/util/assets_index.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -19,11 +20,13 @@ class _MainMenuState extends State<MainMenu> {
 
   late final InputSource _inputSource;
   StreamSubscription<NavInput>? _subscription;
-  final int _rotatingOffset = 0;
-  final int _activeChallenge = 0;
-  final int _activeMenu = 0;
 
-/*
+  // rotationDirection 1 = forwards, -1 = backwards
+  ({int menuOffset, int rotationDirection}) _rotatingMenuData = (menuOffset: 0, rotationDirection: 1);
+
+  int _activeChallenge = 0;
+  int _activeMenu = 0;
+
   @override
   void initState(){
     super.initState();
@@ -35,10 +38,10 @@ class _MainMenuState extends State<MainMenu> {
     setState(() {
       switch (input){
         case NavInput.up:
-          (_rotatingOffset + 1) % RotatingMenu._menuAssetPaths.length;
+          _rotatingMenuData = (menuOffset: (_rotatingMenuData.menuOffset + 1) % AssetsIndex.menuAssetPaths.length, rotationDirection: -1);
           break;
         case NavInput.down:
-          (_rotatingOffset - 1) % RotatingMenu._menuAssetPaths.length;
+          _rotatingMenuData = (menuOffset: (_rotatingMenuData.menuOffset - 1) % AssetsIndex.menuAssetPaths.length, rotationDirection: 1);
           break;
         case NavInput.left:
           break;
@@ -51,7 +54,7 @@ class _MainMenuState extends State<MainMenu> {
       }
     });
   }
-*/
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -61,7 +64,7 @@ class _MainMenuState extends State<MainMenu> {
     return Scaffold(
       body: Stack(
         children: [
-          RotatingMenu(screenSize: screenSize, screenDiagonal: screenDiagonal, rotatingOffset: _rotatingOffset, activeMenu: _activeMenu),
+          RotatingMenu(screenSize: screenSize, screenDiagonal: screenDiagonal, rotatingMenuData: _rotatingMenuData, activeMenu: _activeMenu),
           PointsOverview(
             screenSize: screenSize
           ),

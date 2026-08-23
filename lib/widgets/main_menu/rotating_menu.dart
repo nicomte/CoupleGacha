@@ -11,13 +11,13 @@ class RotatingMenu extends StatefulWidget {
     super.key,
     required this.screenSize,
     required this.screenDiagonal,
-    required this.rotatingOffset,
-    required this.activeMenu
+    required this.rotatingMenuData,
+    required this.activeMenu,
   });
 
   final Size screenSize;
   final double screenDiagonal;
-  final int rotatingOffset;
+  final ({int menuOffset, int rotationDirection}) rotatingMenuData;
   final int activeMenu;
 
   static const _centerHeart = 'assets/center_heart.svg';
@@ -28,23 +28,35 @@ class RotatingMenu extends StatefulWidget {
 
 class _RotatingMenuState extends State<RotatingMenu>
     with SingleTickerProviderStateMixin {
-  int _rotatingOffset = 0;
+  // This Widget gets the rotatingOffset, which defines the order of menu items, from it's parent.
+  // To avoid immediate updates of the menu option positions, they actually base their position on _displayOffset.
+  // The animation starts when the parent passes an updated rotatingOffset and only once the animation is over, does rotatingOffset get assigned to displayOffset.
+  int _displayOffset = 0;
   late final AnimationController _controller;
-  late final Animation<double> _angleAnimation;
+  late final Animation<double> _animationProgress;
 
-  static const double _stepAngle = pi / 2;
+  static const double _stepAngle = (pi / 2);
 
   @override
   void initState() {
     super.initState();
+    _displayOffset = widget.rotatingMenuData.menuOffset;
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _angleAnimation = Tween<double>(
-      begin: 0,
-      end: _stepAngle,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _animationProgress = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  void didUpdateWidget(covariant RotatingMenu oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.rotatingMenuData.menuOffset != widget.rotatingMenuData.menuOffset) {
+      _rotateMenuOptions();
+    }
   }
 
   @override
@@ -56,8 +68,7 @@ class _RotatingMenuState extends State<RotatingMenu>
   void _rotateMenuOptions() {
     _controller.forward(from: 0).then((_) {
       setState(() {
-        _rotatingOffset =
-            (_rotatingOffset - 1) % AssetsIndex.menuAssetPaths.length;
+        _displayOffset = widget.rotatingMenuData.menuOffset;
       });
       _controller.reset();
     });
@@ -85,7 +96,7 @@ class _RotatingMenuState extends State<RotatingMenu>
     // Main element being built back to front: glow around selection, menu options, center heart
     return Scaffold(
       body: AnimatedBuilder(
-        animation: _angleAnimation,
+        animation: _animationProgress,
         builder: (context, child) {
           return Stack(
             children: [
@@ -97,7 +108,7 @@ class _RotatingMenuState extends State<RotatingMenu>
                   index: i,
                   geometry: geometry,
                   menuElementSize: menuElementSize,
-                  animatedAngleOffset: _angleAnimation.value,
+                  animatedAngleOffset: _animationProgress.value * _stepAngle * widget.rotatingMenuData.rotationDirection,
                 ),
               // Center heart
               Builder(
@@ -130,7 +141,7 @@ class _RotatingMenuState extends State<RotatingMenu>
                   final topLeft = topLeftCentered(itemCenter, size);
                   return Positioned(
                     top: topLeft.dy,
-                    left: topLeft.dx + widget.screenDiagonal / 7 ,
+                    left: topLeft.dx + widget.screenDiagonal / 7,
                     child: SvgPicture.asset(
                       'assets/heart_arrow.svg',
                       height: size.height,
@@ -154,7 +165,7 @@ class _RotatingMenuState extends State<RotatingMenu>
     required double animatedAngleOffset,
   }) {
     final assetIndex =
-        (index + _rotatingOffset) % AssetsIndex.menuAssetPaths.length;
+        (index + _displayOffset) % AssetsIndex.menuAssetPaths.length;
     // Location of current index "heart" on the circular menu in Radians
     final angle = (pi * index) / 2 + animatedAngleOffset;
     final itemCenter = geometry.pointAt(angle);
