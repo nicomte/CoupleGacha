@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^2.3.0
+  m5_fpc1020a:
+    path: ../m5_fpc1020a_dart
 dev_dependencies:
   flutter_test:
     sdk: flutter

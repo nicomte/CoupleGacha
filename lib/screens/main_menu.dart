@@ -1,7 +1,6 @@
 import 'dart:async';
-
 import 'package:couple_gacha/navigation/input_source.dart';
-import 'package:couple_gacha/navigation/keyboard_input_source.dart';
+import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/main_menu_enums.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
@@ -18,7 +17,7 @@ class MainMenu extends StatefulWidget {
 }
 
 class _MainMenuState extends State<MainMenu> {
-  late final InputSource _inputSource;
+
   StreamSubscription<NavInput>? _subscription;
 
   ({int menuOffset, RotationDirection rotationDirection}) _rotatingMenuData = (
@@ -30,13 +29,13 @@ class _MainMenuState extends State<MainMenu> {
   ActiveMenu _activeMenu = ActiveMenu.rotatingMenu;
 
   @override
-  void initState() {
-    super.initState();
-    _inputSource = KeyboardInputSource();
-    _subscription = _inputSource.events.listen(inputProcessor);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    assert(_subscription == null, 'MainMenu is already subscribed to InputSource');
+    _subscription = InputSourceProvider.of(context).inputSource.events.listen(_inputProcessor);
   }
 
-  void inputProcessor(NavInput input) {
+  void _inputProcessor(NavInput input) {
     setState(() {
       switch (input) {
         case NavInput.up:
@@ -92,7 +91,6 @@ class _MainMenuState extends State<MainMenu> {
   @override
   void dispose() {
     _subscription?.cancel();
-    _inputSource.dispose();
     super.dispose();
   }
 
