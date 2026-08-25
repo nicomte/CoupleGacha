@@ -31,6 +31,7 @@ class _MainMenuState extends State<MainMenu> {
   int _activeChallenge = 0;
   ActiveMenu _activeMenu = ActiveMenu.rotatingMenu;
   double screenDiagonal = 0;
+  bool _isDialogOpen = false;
 
   @override
   void didChangeDependencies() {
@@ -41,6 +42,9 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   void _inputProcessor(NavInput input) {
+
+    if (_isDialogOpen) return;
+
     final now = DateTime.now();
 
     if (_lastInputTime != null &&
@@ -187,17 +191,25 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   Future<void> _openSelectChallenge() async {
+    setState(() {
+      _isDialogOpen = true;
+    });
+
     final result = await showGeneralDialog<AuthResult>(
       context: context,
-      pageBuilder: (c, a1, a2) => FingerprintAuthDialog(onSubscribed: _cancelInputSubscription),
+      pageBuilder: (c, a1, a2) => FingerprintAuthDialog(),
       barrierColor: Colors.black54,
       transitionDuration: Duration(milliseconds: 300),
       barrierDismissible: false,
-      transitionBuilder:(context, animation, secondaryAnimation, child) => Transform.scale(
-        scale: animation.value,
-        child: child
-      ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) =>
+          Transform.scale(scale: animation.value, child: child),
     );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isDialogOpen = false;
+    });
 
     switch (result) {
       case null:
@@ -207,18 +219,11 @@ class _MainMenuState extends State<MainMenu> {
         // TODO: Handle this case.
         throw UnimplementedError();
       case AuthResult.cancelled:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+      // Nothing to do
+      break;     
       case AuthResult.failed:
         // TODO: Handle this case.
         throw UnimplementedError();
-    }
-  }
-
-  void _cancelInputSubscription() {
-    if (_subscription != null) {
-      _subscription!.cancel();
-      _subscription = null;
     }
   }
 
