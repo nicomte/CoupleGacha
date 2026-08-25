@@ -1,6 +1,6 @@
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenge_list_entry.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list_title.dart';
-import 'package:couple_gacha/widgets/main_menu/main_menu_enums.dart';
+import 'package:couple_gacha/domain/main_menu_enums.dart';
 import 'package:flutter/material.dart';
 
 class ChallengesList extends StatefulWidget {

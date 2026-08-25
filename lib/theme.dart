@@ -5,7 +5,7 @@ class AppTheme{
     brightness: Brightness.light,
     primary: const Color(0xFFFF007F),
     onPrimary: Colors.black,
-    primaryContainer: Color(0xFFFFD6E8),
+    primaryContainer: Color.fromARGB(255, 255, 74, 152),
     onPrimaryContainer: Color(0xFF4A0026),
     secondary: Color(0xFFD6879A) /* etc — fill in the roles you actually use */,
     onSecondary: Colors.white,

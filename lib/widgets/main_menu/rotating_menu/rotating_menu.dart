@@ -1,8 +1,8 @@
 import 'package:couple_gacha/methods/element_utils.dart';
-import 'package:couple_gacha/widgets/main_menu/circle_geometry.dart';
-import 'package:couple_gacha/widgets/main_menu/heart_glow.dart';
-import 'package:couple_gacha/widgets/main_menu/main_menu_enums.dart';
-import 'package:couple_gacha/widgets/util/assets_index.dart';
+import 'package:couple_gacha/widgets/main_menu/rotating_menu/circle_geometry.dart';
+import 'package:couple_gacha/widgets/main_menu/rotating_menu/heart_glow.dart';
+import 'package:couple_gacha/domain/main_menu_enums.dart';
+import 'package:couple_gacha/widgets/main_menu/rotating_menu/assets_index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:math';
@@ -18,8 +18,9 @@ class RotatingMenu extends StatefulWidget {
 
   final Size screenSize;
   final double screenDiagonal;
-  final ({int menuOffset, RotationDirection rotationDirection})
-  rotatingMenuData;
+
+  final ({int menuOffset, RotationDirection rotationDirection}) rotatingMenuData;
+
   final ActiveMenu activeMenu;
 
   static const _centerHeart = 'assets/center_heart.svg';
@@ -42,6 +43,7 @@ class _RotatingMenuState extends State<RotatingMenu>
   @override
   void initState() {
     super.initState();
+
     _displayOffset = widget.rotatingMenuData.menuOffset;
 
     _controller = AnimationController(
@@ -72,10 +74,14 @@ class _RotatingMenuState extends State<RotatingMenu>
   }
 
   void _rotateMenuOptions() {
+    if (_controller.value != 0.0) return;
+
     _controller.forward(from: 0).then((_) {
+
       setState(() {
         _displayOffset = widget.rotatingMenuData.menuOffset;
       });
+
       _controller.reset();
     });
   }
@@ -109,7 +115,7 @@ class _RotatingMenuState extends State<RotatingMenu>
               // Selected heart glow
               HeartGlow(geometry: geometry, baseSize: menuElementSize),
               // Element options
-              for (int i = 0; i < AssetsIndex.menuAssetPaths.length; i++)
+              for (int i = 0; i < AssetsIndex.menuItems.length; i++)
                 _buildMenuItem(
                   index: i,
                   geometry: geometry,
@@ -174,7 +180,9 @@ class _RotatingMenuState extends State<RotatingMenu>
     required double animatedAngleOffset,
   }) {
     final assetIndex =
-        (index + _displayOffset) % AssetsIndex.menuAssetPaths.length;
+        (index + _displayOffset) % AssetsIndex.menuItems.length;
+
+    final menuItem = AssetsIndex.menuItems[assetIndex];
     // Location of current index "heart" on the circular menu in Radians
     final angle = (pi * index) / 2 + animatedAngleOffset;
     final itemCenter = geometry.pointAt(angle);
@@ -186,7 +194,7 @@ class _RotatingMenuState extends State<RotatingMenu>
       child: Transform.rotate(
         angle: angle,
         child: SvgPicture.asset(
-          AssetsIndex.menuAssetPaths[assetIndex],
+          menuItem.assetPath,
           colorFilter:
               index == 1 &&
                   !_controller.isAnimating &&

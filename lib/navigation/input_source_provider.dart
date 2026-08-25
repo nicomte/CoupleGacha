@@ -28,7 +28,7 @@ class InputSourceProvider extends StatefulWidget {
 class _InputSourceProviderState extends State<InputSourceProvider> {
   @override
   Widget build(BuildContext context) {
-    return InputSourceProvider(
+    return InputSourceInherited(
       inputSource: widget.inputSource,
       child: widget.child,
     );
