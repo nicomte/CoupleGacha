@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -9,11 +10,9 @@ import 'package:flutter_svg/svg.dart';
 class FingerprintAuthDialog extends StatefulWidget {
   const FingerprintAuthDialog({
     super.key,
-    required this.screenDiagonal,
     required this.onSubscribed,
   });
 
-  final double screenDiagonal;
   final VoidCallback onSubscribed;
 
   @override
@@ -21,7 +20,6 @@ class FingerprintAuthDialog extends StatefulWidget {
 }
 
 class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
-  String message = 'Waiting for authentication';
   StreamSubscription<NavInput>? _subscription;
 
   @override
@@ -45,10 +43,12 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final screenDiagonal = sqrt(pow(size.width, 2) + pow(size.height, 2));
     return Dialog(
       child: Container(
-        width: widget.screenDiagonal * 0.2,
-        height: widget.screenDiagonal * 0.3,
+        width: screenDiagonal * 0.2,
+        height: screenDiagonal * 0.3,
         decoration: BoxDecoration(
           border: BoxBorder.all(
             color: Theme.of(context).colorScheme.tertiary,
@@ -83,7 +83,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
                 SvgPicture.asset('assets/fingerprint.svg', width: width * 0.3),
 
                 outlinedText(
-                  message,
+                  AuthStatus.waiting.message,
                   fontSize:
                       Theme.of(context).textTheme.bodyMedium!.fontSize! *
                       fontScalingFactor,

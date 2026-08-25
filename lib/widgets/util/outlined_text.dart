@@ -13,8 +13,7 @@ Widget outlinedText(String text, {required double fontSize, required Color backg
             ..strokeWidth = 2
             ..color = backgroundColor
         ),
-        softWrap: false,
-        maxLines: 1,
+        textAlign: TextAlign.center,
       ),
       Text(
         text,
@@ -23,8 +22,7 @@ Widget outlinedText(String text, {required double fontSize, required Color backg
           color: textColor,
           fontFamily: fontFamily
         ),
-        softWrap: false,
-        maxLines: 1,
+        textAlign: TextAlign.center,
       ),
     ],
   );

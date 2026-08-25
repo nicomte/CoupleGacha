@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:couple_gacha/domain/main_menu_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
-import 'package:couple_gacha/widgets/dialogs/auth_result_enum.dart';
+import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
@@ -90,7 +90,6 @@ class _MainMenuState extends State<MainMenu> {
       case NavInput.back:
         break;
     }
-    ;
   }
 
   void _rotateMenu({required RotationDirection direction}) {
@@ -188,14 +187,16 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   Future<void> _openSelectChallenge() async {
-    final result = await showDialog<AuthResult>(
+    final result = await showGeneralDialog<AuthResult>(
       context: context,
-      barrierDismissible: false,
+      pageBuilder: (c, a1, a2) => FingerprintAuthDialog(onSubscribed: _cancelInputSubscription),
       barrierColor: Colors.black54,
-      builder: (context) => FingerprintAuthDialog(
-          screenDiagonal: screenDiagonal,
-          onSubscribed: _cancelInputSubscription,
-        ),
+      transitionDuration: Duration(milliseconds: 300),
+      barrierDismissible: false,
+      transitionBuilder:(context, animation, secondaryAnimation, child) => Transform.scale(
+        scale: animation.value,
+        child: child
+      ),
     );
 
     switch (result) {
@@ -215,7 +216,7 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   void _cancelInputSubscription() {
-    if (_subscription != null){
+    if (_subscription != null) {
       _subscription!.cancel();
       _subscription = null;
     }
