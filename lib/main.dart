@@ -12,11 +12,14 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    theme: AppTheme.colorTheme,
-    home: InputSourceProvider(
-      inputSource: KeyboardInputSource(),
-      child: const MainMenu(),
+  Widget build(BuildContext context) => InputSourceProvider(
+    inputSource: KeyboardInputSource(),
+    child: MaterialApp(
+      theme: AppTheme.colorTheme,
+      home: InputSourceProvider(
+        inputSource: KeyboardInputSource(),
+        child: const MainMenu(),
+      ),
     ),
   );
 }

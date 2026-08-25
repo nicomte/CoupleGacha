@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:couple_gacha/domain/main_menu_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/widgets/dialogs/auth_result_enum.dart';
+import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu/assets_index.dart';
@@ -27,19 +29,13 @@ class _MainMenuState extends State<MainMenu> {
   );
 
   int _activeChallenge = 0;
-
   ActiveMenu _activeMenu = ActiveMenu.rotatingMenu;
+  double screenDiagonal = 0;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    assert(
-      _subscription == null,
-      'MainMenu is already subscribed to InputSource',
-    );
-
-    _subscription = InputSourceProvider.of(
+    _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
   }
@@ -54,40 +50,47 @@ class _MainMenuState extends State<MainMenu> {
 
     _lastInputTime = now;
 
-    setState(() {
-      switch (input) {
-        case NavInput.up:
+    switch (input) {
+      case NavInput.up:
+        setState(() {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.counterClockwise);
           } else {
             _activeChallenge = _toggleActiveChallenge();
           }
-          break;
+        });
+        break;
 
-        case NavInput.down:
+      case NavInput.down:
+        setState(() {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.clockwise);
           } else {
             _activeChallenge = _toggleActiveChallenge();
           }
-          break;
+        });
+        break;
 
-        case NavInput.left:
+      case NavInput.left:
+        setState(() {
           _activeMenu = _toggleActiveMenu();
-          break;
+        });
+        break;
 
-        case NavInput.right:
+      case NavInput.right:
+        setState(() {
           _activeMenu = _toggleActiveMenu();
-          break;
+        });
+        break;
 
-        case NavInput.select:
-          _select();
-          break;
+      case NavInput.select:
+        _select();
+        break;
 
-        case NavInput.back:
-          break;
-      }
-    });
+      case NavInput.back:
+        break;
+    }
+    ;
   }
 
   void _rotateMenu({required RotationDirection direction}) {
@@ -134,7 +137,7 @@ class _MainMenuState extends State<MainMenu> {
         break;
 
       case ActiveMenu.challengesList:
-        _selectChallenge();
+        _redeemChallenge();
         break;
     }
   }
@@ -161,8 +164,8 @@ class _MainMenuState extends State<MainMenu> {
     }
   }
 
-  void _selectChallenge() {
-    // TODO: Handle selecting a challenge.
+  void _redeemChallenge() {
+    // TODO: Implement redeemChallenge
   }
 
   void _openCheckRewards() {
@@ -184,8 +187,38 @@ class _MainMenuState extends State<MainMenu> {
     // TODO: Navigate to redeem points.
   }
 
-  void _openSelectChallenge() {
-    // TODO: Navigate to challenge selection.
+  Future<void> _openSelectChallenge() async {
+    final result = await showDialog<AuthResult>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (context) => FingerprintAuthDialog(
+          screenDiagonal: screenDiagonal,
+          onSubscribed: _cancelInputSubscription,
+        ),
+    );
+
+    switch (result) {
+      case null:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case AuthResult.success:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case AuthResult.cancelled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case AuthResult.failed:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+    }
+  }
+
+  void _cancelInputSubscription() {
+    if (_subscription != null){
+      _subscription!.cancel();
+      _subscription = null;
+    }
   }
 
   @override
@@ -198,9 +231,7 @@ class _MainMenuState extends State<MainMenu> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    final screenDiagonal = sqrt(
-      pow(screenSize.width, 2) + pow(screenSize.height, 2),
-    );
+    screenDiagonal = sqrt(pow(screenSize.width, 2) + pow(screenSize.height, 2));
 
     return Scaffold(
       body: Stack(
