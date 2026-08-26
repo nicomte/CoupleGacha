@@ -1,4 +1,4 @@
-import 'package:couple_gacha/methods/element_utils.dart';
+import 'package:couple_gacha/widgets/util/element_utils.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu/circle_geometry.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu/heart_glow.dart';
 import 'package:couple_gacha/domain/main_menu_enums.dart';

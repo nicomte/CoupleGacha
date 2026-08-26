@@ -5,13 +5,21 @@ enum AuthResult {
 }
 
 enum AuthStatus {
-  waiting("Waiting for authentication..."),
-  attempting("Authentication in progress..."),
-  failure1("Failure 1/3, try again."),
-  failure2("Failure 2/3, try again."),
-  failure3("Failure 3/3, Cancelling."),
-  canceled("Canceled.");
+  authenticating,
+  failure,
+  success,
+  canceled;
 
-  const AuthStatus(this.message);
-  final String message;
+  String message([int retryCount = 0, int maxRetries = 3]) {
+    switch (this) {
+      case AuthStatus.authenticating:
+        return "Authenticating...";
+      case AuthStatus.failure:
+        return "Failure $retryCount/$maxRetries, ${retryCount >= maxRetries ? 'cancelling...' : 'try again'}.";
+      case AuthStatus.success:
+        return "Success!";
+      case AuthStatus.canceled:
+        return "Canceled.";
+    }
+  }
 }

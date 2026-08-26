@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:couple_gacha/hardware_communication/sensor_service.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:m5_fpc1020a/m5_fpc1020a.dart';
 
 class FingerprintAuthDialog extends StatefulWidget {
   const FingerprintAuthDialog({super.key});
@@ -16,7 +18,28 @@ class FingerprintAuthDialog extends StatefulWidget {
 
 class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
   StreamSubscription<NavInput>? _subscription;
-  String _statusMessage = AuthStatus.waiting.message;
+  String _statusMessage = AuthStatus.authenticating.message();
+  late final SensorService _fingerprintSensor;
+  bool _fingerprintSensorActive = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fingerprintSensor = SensorService();
+    _fingerprintSensor.init().then((success) {
+      setState(() {
+        _fingerprintSensorActive = success;
+        if (!success) {
+          _statusMessage = "Failed to initialize fingerprint sensor.";
+        }
+      });
+    }).catchError((error) {
+      setState(() {
+        _fingerprintSensorActive = false;
+        _statusMessage = "Error initializing fingerprint sensor: $error";
+      });
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -28,10 +51,8 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
 
   @override
   void dispose() {
+    _subscription?.cancel();
     super.dispose();
-    if (_subscription != null) {
-      _subscription!.cancel();
-    }
   }
 
   void _closedWith(AuthResult result) {
@@ -40,10 +61,38 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
     }
   }
 
+  Future<(int?, PermissionLevel?, bool)> _authenticateFinger() async {
+    final int maxRetries = 3;
+    int retryCounter = 0;
+    MatchResult result;
+
+    while (maxRetries > retryCounter) {
+      if (!_fingerprintSensorActive) {
+        throw StateError('Please connect to sensor.');
+      }
+      result = await _fingerprintSensor.matchFingerprint(8000);
+
+      if (result.success == true) {
+        setState(() {
+          _statusMessage = AuthStatus.success.message();
+        });
+        return (result.userId, result.permission, true);
+
+      } else {
+        retryCounter++;
+        setState(() {
+          _statusMessage = AuthStatus.failure.message(retryCounter, maxRetries);
+        });
+      }
+    }
+
+    return (null, null, false);
+  }
+
   Future<void> _inputProcessor(NavInput input) async {
     if (input == NavInput.back) {
       setState(() {
-        _statusMessage = AuthStatus.canceled.message;
+        _statusMessage = AuthStatus.canceled.message();
       });
 
       await Future.delayed(const Duration(milliseconds: 300));
