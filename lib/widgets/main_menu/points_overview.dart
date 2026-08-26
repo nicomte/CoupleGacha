@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 class PointsOverview extends StatefulWidget {
   final Size screenSize;
+  final double screenDiagonal;
 
   const PointsOverview({
     super.key,
-    required this.screenSize
+    required this.screenSize,
+    required this.screenDiagonal
   });
 
   static const List<(String, int)> _users = [
@@ -22,9 +24,10 @@ class _PointsOverviewState extends State<PointsOverview> {
   @override
   Widget build(BuildContext context) {
     final pointsContainerSize = Size(
-      widget.screenSize.width / 3,
-      widget.screenSize.height / 3.5,
+      widget.screenSize.width / 2.2,
+      widget.screenSize.height / 2.5,
     );
+    double fontSizeFactor = widget.screenDiagonal * 0.001;
 
     return Positioned(
       left: widget.screenSize.width - pointsContainerSize.width,
@@ -48,24 +51,20 @@ class _PointsOverviewState extends State<PointsOverview> {
           ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Expanded(
               flex: 1,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: outlinedText(
+              child: outlinedText(
                   'Points',
                   fontSize: Theme.of(
                     context,
-                  ).textTheme.headlineMedium!.fontSize!,
+                  ).textTheme.headlineMedium!.fontSize! * fontSizeFactor,
                   backgroundColor: Theme.of(context).colorScheme.tertiary,
                   textColor: Theme.of(context).textTheme.headlineMedium!.color!,
                   fontFamily: Theme.of(
                     context,
                   ).textTheme.headlineMedium!.fontFamily!,
                 ),
-              ),
             ),
             Expanded(
               flex: 2,
@@ -88,7 +87,7 @@ class _PointsOverviewState extends State<PointsOverview> {
                             '$user - $points Points',
                             fontSize: Theme.of(
                               context,
-                            ).textTheme.bodyMedium!.fontSize!,
+                            ).textTheme.bodyMedium!.fontSize! * fontSizeFactor,
                             backgroundColor: Theme.of(
                               context,
                             ).colorScheme.tertiary,

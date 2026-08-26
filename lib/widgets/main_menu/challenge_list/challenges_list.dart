@@ -32,8 +32,8 @@ class _ChallengesListState extends State<ChallengesList> {
   @override
   Widget build(BuildContext context) {
     final challengesListSize = Size(
-      widget.screenSize.width / 3,
-      widget.screenSize.height / 3,
+      widget.screenSize.width / 2,
+      widget.screenSize.height / 2,
     );
 
     return Positioned(

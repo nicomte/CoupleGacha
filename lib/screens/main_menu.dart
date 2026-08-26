@@ -249,7 +249,7 @@ class _MainMenuState extends State<MainMenu> {
             activeMenu: _activeMenu,
           ),
 
-          PointsOverview(screenSize: screenSize),
+          PointsOverview(screenSize: screenSize, screenDiagonal: screenDiagonal),
 
           ChallengesList(
             screenSize: screenSize,

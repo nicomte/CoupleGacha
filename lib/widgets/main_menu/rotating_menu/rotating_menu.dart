@@ -205,7 +205,6 @@ class _RotatingMenuState extends State<RotatingMenu>
                 )
               : null,
           height: menuElementSize.height,
-          width: menuElementSize.width,
         ),
       ),
     );
