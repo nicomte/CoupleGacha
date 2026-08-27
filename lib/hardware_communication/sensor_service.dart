@@ -37,10 +37,10 @@ class SensorService {
 
     final receivePort = ReceivePort();
     _isolate = await Isolate.spawn(sensorIsolateEntry, receivePort.sendPort);
-
     final broadcast = receivePort.asBroadcastStream();
     // First message from the worker is always its SendPort.
     _workerPort = await broadcast.first as SendPort;
+
 
     _subscription = broadcast.listen((message) {
       final response = message as SensorResponse;
@@ -53,9 +53,13 @@ class SensorService {
       }
     });
 
-    _initialized = true;
+    final result = await _send<bool>(
+      BeginCmd(_id(), baud: baud, port: port)
+    );
 
-    return _send<bool>(BeginCmd(_id(), baud: baud, port: port));
+    _initialized = result;
+
+    return result;
   }
 
   Future<bool> setBaud(int baud) => _send(SetBaudCmd(_id(), baud));

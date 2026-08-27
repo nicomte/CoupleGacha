@@ -22,23 +22,15 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
   late final SensorService _fingerprintSensor;
   bool _fingerprintSensorActive = false;
 
+  bool _streamReady = false;
+  bool _authStarted = false;
+
   @override
   void initState() {
     super.initState();
     _fingerprintSensor = SensorService();
-    _fingerprintSensor.init().then((success) {
-      setState(() {
-        _fingerprintSensorActive = success;
-        if (!success) {
-          _statusMessage = "Failed to initialize fingerprint sensor.";
-        }
-      });
-    }).catchError((error) {
-      setState(() {
-        _fingerprintSensorActive = false;
-        _statusMessage = "Error initializing fingerprint sensor: $error";
-      });
-    });
+    _initFingerprintSensor();
+    _maybeStartAuth();
   }
 
   @override
@@ -47,12 +39,29 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
+    _streamReady = true;
+    _maybeStartAuth();
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _fingerprintSensor.dispose();
     super.dispose();
+  }
+
+  Future<void> _initFingerprintSensor() async {
+    try {
+      _fingerprintSensorActive = await _fingerprintSensor.init();
+
+
+      if (!mounted) return;
+
+      setState(() {});
+
+      _maybeStartAuth();
+    } catch (e, st) {
+    }
   }
 
   void _closedWith(AuthResult result) {
@@ -61,23 +70,34 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
     }
   }
 
-  Future<(int?, PermissionLevel?, bool)> _authenticateFinger() async {
+  void _maybeStartAuth() {
+    if (_fingerprintSensorActive && _streamReady && !_authStarted) {
+      _authStarted = true;
+      _authenticateFinger();
+    }
+  }
+
+  Future<void> _authenticateFinger() async {
     final int maxRetries = 3;
     int retryCounter = 0;
     MatchResult result;
 
     while (maxRetries > retryCounter) {
+      if (!mounted) return;
       if (!_fingerprintSensorActive) {
         throw StateError('Please connect to sensor.');
       }
       result = await _fingerprintSensor.matchFingerprint(8000);
+      if (!mounted) return;
 
       if (result.success == true) {
         setState(() {
           _statusMessage = AuthStatus.success.message();
         });
-        return (result.userId, result.permission, true);
-
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (!mounted) return;
+        _closedWith(AuthResult.success);
+        return;
       } else {
         retryCounter++;
         setState(() {
@@ -85,8 +105,10 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
         });
       }
     }
-
-    return (null, null, false);
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+    _closedWith(AuthResult.failed);
+    return;
   }
 
   Future<void> _inputProcessor(NavInput input) async {

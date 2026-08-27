@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:couple_gacha/domain/main_menu_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
@@ -19,7 +20,7 @@ class MainMenu extends StatefulWidget {
   State<MainMenu> createState() => _MainMenuState();
 }
 
-class _MainMenuState extends State<MainMenu> {
+class _MainMenuState extends State<MainMenu> with RouteAware{
   StreamSubscription<NavInput>? _subscription;
   DateTime? _lastInputTime;
 
@@ -31,7 +32,7 @@ class _MainMenuState extends State<MainMenu> {
   int _activeChallenge = 0;
   ActiveMenu _activeMenu = ActiveMenu.rotatingMenu;
   double screenDiagonal = 0;
-  bool _isDialogOpen = false;
+  bool _acceptsInput = true;
 
   @override
   void didChangeDependencies() {
@@ -39,11 +40,23 @@ class _MainMenuState extends State<MainMenu> {
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
-  void _inputProcessor(NavInput input) {
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
 
-    if (_isDialogOpen) return;
+  @override
+  void didPushNext() => setState(() => _acceptsInput = false);
+
+  @override
+  void didPopNext() => setState(() => _acceptsInput = true);
+
+  void _inputProcessor(NavInput input) {
+    if (!_acceptsInput) return;
 
     final now = DateTime.now();
 
@@ -92,6 +105,7 @@ class _MainMenuState extends State<MainMenu> {
         break;
 
       case NavInput.back:
+      // Can't cancel anything in here
         break;
     }
   }
@@ -191,10 +205,6 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   Future<void> _openSelectChallenge() async {
-    setState(() {
-      _isDialogOpen = true;
-    });
-
     final result = await showGeneralDialog<AuthResult>(
       context: context,
       pageBuilder: (c, a1, a2) => FingerprintAuthDialog(),
@@ -207,30 +217,19 @@ class _MainMenuState extends State<MainMenu> {
 
     if (!mounted) return;
 
-    setState(() {
-      _isDialogOpen = false;
-    });
-
     switch (result) {
       case null:
         // TODO: Handle this case.
         throw UnimplementedError();
       case AuthResult.success:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        print('successfully authenticated');
       case AuthResult.cancelled:
-      // Nothing to do
-      break;     
+        // Nothing to do
+        break;
       case AuthResult.failed:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        //Nothing to do
+        break;
     }
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
   }
 
   @override
@@ -249,7 +248,10 @@ class _MainMenuState extends State<MainMenu> {
             activeMenu: _activeMenu,
           ),
 
-          PointsOverview(screenSize: screenSize, screenDiagonal: screenDiagonal),
+          PointsOverview(
+            screenSize: screenSize,
+            screenDiagonal: screenDiagonal,
+          ),
 
           ChallengesList(
             screenSize: screenSize,
