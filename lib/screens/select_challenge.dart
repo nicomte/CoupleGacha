@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/storage/challenges.dart';
 import 'package:couple_gacha/widgets/select_challenge/challenge_element.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
@@ -37,22 +38,35 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
   @override
   void didPopNext() => setState(() => _acceptsInput = true);
 
+  @override
+  void dispose() {
+    if (_subscription != null) {
+      _subscription!.cancel();
+    }
+    super.dispose();
+  }
+
   void _inputProcessor(NavInput input) {
     if (!_acceptsInput) return;
 
     switch (input) {
       case NavInput.back:
+      Navigator.of(context).pop();
       case NavInput.up:
-        // Nothing to do
+      // Nothing to do
+      break;
       case NavInput.down:
-        // Nothing to do
+      // Nothing to do
+      break;
       case NavInput.left:
         _decreaseIndex();
+        break;
       case NavInput.right:
         _increaseIndex();
+        break;
       case NavInput.select:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        activeChallenges[widget.activePlayerId] = challenges[_activeChallengeIndex].challengeText;
+        Navigator.of(context).pop();
     }
   }
 
@@ -86,7 +100,9 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
                 ...challenges.asMap().entries.map(
                   (entry) => Expanded(
                     child: ChallengeElement(
-                      isHighlighted: entry.key == _activeChallengeIndex ? true : false,
+                      isHighlighted: entry.key == _activeChallengeIndex
+                          ? true
+                          : false,
                       category: entry.value.challengeCategory,
                       screenDiagonal: screenDiagonal,
                     ),

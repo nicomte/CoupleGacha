@@ -1,7 +1,18 @@
-enum AuthResult {
-  success,
-  cancelled,
-  failed
+sealed class AuthResult {
+  const AuthResult();
+}
+
+class AuthSuccess extends AuthResult {
+  final int userId;
+  const AuthSuccess(this.userId);
+}
+
+class AuthCancelled extends AuthResult {
+  const AuthCancelled();
+}
+
+class AuthFailed extends AuthResult {
+  const AuthFailed();
 }
 
 enum AuthStatus {

@@ -5,6 +5,7 @@ import 'package:couple_gacha/domain/main_menu_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
+import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
@@ -20,7 +21,7 @@ class MainMenu extends StatefulWidget {
   State<MainMenu> createState() => _MainMenuState();
 }
 
-class _MainMenuState extends State<MainMenu> with RouteAware{
+class _MainMenuState extends State<MainMenu> with RouteAware {
   StreamSubscription<NavInput>? _subscription;
   DateTime? _lastInputTime;
 
@@ -105,7 +106,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware{
         break;
 
       case NavInput.back:
-      // Can't cancel anything in here
+        // Can't cancel anything in here
         break;
     }
   }
@@ -219,16 +220,20 @@ class _MainMenuState extends State<MainMenu> with RouteAware{
 
     switch (result) {
       case null:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case AuthResult.success:
-        print('successfully authenticated');
-      case AuthResult.cancelled:
-        // Nothing to do
-        break;
-      case AuthResult.failed:
-        //Nothing to do
-        break;
+      // Nothing to do
+      break;
+      case AuthSuccess(:final userId):
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SelectChallenge(activePlayerId: userId),
+          ),
+        );
+      case AuthCancelled():
+      // Nothing to do
+      break;
+      case AuthFailed():
+      // Nothing to do
+      break;
     }
   }
 

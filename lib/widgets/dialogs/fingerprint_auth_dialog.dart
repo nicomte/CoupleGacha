@@ -80,10 +80,13 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
 
     while (maxRetries > retryCounter) {
       if (!mounted) return;
+
       if (!_fingerprintSensorActive) {
         throw StateError('Please connect to sensor.');
       }
+
       result = await _fingerprintSensor.matchFingerprint(8000);
+
       if (!mounted) return;
 
       if (result.success == true) {
@@ -92,8 +95,9 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
         });
         await Future.delayed(const Duration(milliseconds: 300));
         if (!mounted) return;
-        _closedWith(AuthResult.success);
+        _closedWith(AuthSuccess(result.userId!));
         return;
+
       } else {
         retryCounter++;
         setState(() {
@@ -103,7 +107,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
     }
     await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
-    _closedWith(AuthResult.failed);
+    _closedWith(AuthFailed());
     return;
   }
 
@@ -115,7 +119,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
 
       await Future.delayed(const Duration(milliseconds: 300));
 
-      _closedWith(AuthResult.cancelled);
+      _closedWith(AuthCancelled());
     }
   }
 
