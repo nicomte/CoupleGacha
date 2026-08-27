@@ -1,3 +1,5 @@
+import 'package:couple_gacha/storage/active_challenges.dart';
+import 'package:couple_gacha/storage/players.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenge_list_entry.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list_title.dart';
 import 'package:couple_gacha/domain/main_menu_enums.dart';
@@ -14,14 +16,6 @@ class ChallengesList extends StatefulWidget {
   final Size screenSize;
   final int activeChallenge;
   final ActiveMenu activeMenu;
-
-  static const List<(String, String)> _usersChallenges = [
-    ('Player 1', 'test kurzer text'),
-    (
-      'Player 2',
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ',
-    ),
-  ];
 
   @override
   State<ChallengesList> createState() => _ChallengesListState();
@@ -43,24 +37,26 @@ class _ChallengesListState extends State<ChallengesList> {
         height: challengesListSize.height,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.start,
+          spacing: challengesListSize.height * 0.05,
           children: [
+            SizedBox(height: challengesListSize.height * 0.05),
             ChallengesListTitle(
               challengesListSize: challengesListSize,
               titleText: 'Active Challenges',
               textStyle: Theme.of(context).textTheme.headlineMedium!,
             ),
-            ...ChallengesList._usersChallenges.asMap().entries.map(
-              (entry) => ChallengesListEntry(
+            ...activeChallenges.entries.map((entry)
+              => ChallengesListEntry(
                 challengesListSize: challengesListSize,
-                entryText: entry.value.$2,
-                playerName: entry.value.$1,
+                entryText: entry.value,
+                playerName: players[entry.key] ?? '',
                 textStyle: Theme.of(context).textTheme.bodyMedium!,
                 isHighlighted:
                     entry.key == widget.activeChallenge &&
                     widget.activeMenu == ActiveMenu.challengesList,
               ),
-            ),
+            )
           ],
         ),
       ),

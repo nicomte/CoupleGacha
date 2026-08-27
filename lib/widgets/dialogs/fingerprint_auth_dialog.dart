@@ -51,17 +51,13 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
   }
 
   Future<void> _initFingerprintSensor() async {
-    try {
-      _fingerprintSensorActive = await _fingerprintSensor.init();
+    _fingerprintSensorActive = await _fingerprintSensor.init();
 
+    if (!mounted) return;
 
-      if (!mounted) return;
+    setState(() {});
 
-      setState(() {});
-
-      _maybeStartAuth();
-    } catch (e, st) {
-    }
+    _maybeStartAuth();
   }
 
   void _closedWith(AuthResult result) {
