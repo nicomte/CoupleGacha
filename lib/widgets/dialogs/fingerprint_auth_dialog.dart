@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:couple_gacha/hardware_communication/sensor_service.dart';
+import 'package:couple_gacha/fingerprint_scanner_isolate/sensor_service.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
@@ -103,6 +103,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
         setState(() {
           _statusMessage = AuthStatus.failure.message(retryCounter, maxRetries);
         });
+        await Future.delayed(const Duration(seconds: 1));
       }
     }
     await Future.delayed(const Duration(milliseconds: 300));
