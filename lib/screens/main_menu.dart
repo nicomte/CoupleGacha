@@ -6,7 +6,8 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/screens/select_challenge.dart';
-import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
+import 'package:couple_gacha/domain/auth_enums.dart';
+import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
@@ -90,12 +91,18 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
         break;
 
       case NavInput.left:
+        if (activeChallenges.isEmpty) {
+          break;
+        }
         setState(() {
           _activeMenu = _toggleActiveMenu();
         });
         break;
 
       case NavInput.right:
+        if (activeChallenges.isEmpty) {
+          break;
+        }
         setState(() {
           _activeMenu = _toggleActiveMenu();
         });
@@ -206,22 +213,14 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   }
 
   Future<void> _openSelectChallenge() async {
-    final result = await showGeneralDialog<AuthResult>(
-      context: context,
-      pageBuilder: (c, a1, a2) => FingerprintAuthDialog(),
-      barrierColor: Colors.black54,
-      transitionDuration: Duration(milliseconds: 300),
-      barrierDismissible: false,
-      transitionBuilder: (context, animation, secondaryAnimation, child) =>
-          Transform.scale(scale: animation.value, child: child),
-    );
+    final result = await FingerprintAuthDialog.open(context);
 
     if (!mounted) return;
 
     switch (result) {
       case null:
-      // Nothing to do
-      break;
+        // Nothing to do
+        break;
       case AuthSuccess(:final userId):
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -229,11 +228,11 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           ),
         );
       case AuthCancelled():
-      // Nothing to do
-      break;
+        // Nothing to do
+        break;
       case AuthFailed():
-      // Nothing to do
-      break;
+        // Nothing to do
+        break;
     }
   }
 

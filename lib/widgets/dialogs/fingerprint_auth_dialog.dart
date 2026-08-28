@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:couple_gacha/fingerprint_scanner_isolate/sensor_service.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
-import 'package:couple_gacha/widgets/dialogs/auth_enums.dart';
+import 'package:couple_gacha/domain/auth_enums.dart';
+import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,6 +12,10 @@ import 'package:m5_fpc1020a/m5_fpc1020a.dart';
 
 class FingerprintAuthDialog extends StatefulWidget {
   const FingerprintAuthDialog({super.key});
+
+  static Future<AuthResult?> open(BuildContext context) {
+    return GachaDialog.show<AuthResult>(context, const FingerprintAuthDialog());
+  }
 
   @override
   State<FingerprintAuthDialog> createState() => _FingerprintAuthDialogState();
@@ -97,7 +102,6 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
         if (!mounted) return;
         _closedWith(AuthSuccess(result.userId!));
         return;
-
       } else {
         retryCounter++;
         setState(() {
@@ -126,98 +130,71 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final screenDiagonal = sqrt(pow(size.width, 2) + pow(size.height, 2));
-    return Dialog(
-      child: Container(
-        width: screenDiagonal * 0.2,
-        height: screenDiagonal * 0.3,
-        decoration: BoxDecoration(
-          border: BoxBorder.all(
-            color: Theme.of(context).colorScheme.tertiary,
-            width: 5.0,
-          ),
-          borderRadius: const BorderRadius.all(Radius.circular(30)),
-          color: Theme.of(context).colorScheme.primaryContainer,
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        final fontScalingFactor = sqrt(pow(width, 2) + pow(height, 2)) * 0.001;
 
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final height = constraints.maxHeight;
-            final fontScalingFactor =
-                sqrt(pow(width, 2) + pow(height, 2)) * 0.001;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            outlinedText(
+              'Put registered finger on sensor to authenticate.',
+              fontSize:
+                  Theme.of(context).textTheme.headlineMedium!.fontSize! *
+                  fontScalingFactor,
+              backgroundColor: Theme.of(context).colorScheme.tertiary,
+              textColor: Theme.of(context).textTheme.headlineMedium!.color!,
+              fontFamily: Theme.of(
+                context,
+              ).textTheme.headlineMedium!.fontFamily!,
+            ),
 
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            SvgPicture.asset('assets/fingerprint.svg', width: width * 0.3),
+
+            outlinedText(
+              _statusMessage,
+              fontSize:
+                  Theme.of(context).textTheme.bodyMedium!.fontSize! *
+                  fontScalingFactor,
+              backgroundColor: Theme.of(context).colorScheme.tertiary,
+              textColor: Theme.of(context).textTheme.bodyMedium!.color!,
+              fontFamily: Theme.of(context).textTheme.bodyMedium!.fontFamily!,
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 outlinedText(
-                  'Put registered finger on sensor to authenticate.',
+                  'Press',
                   fontSize:
-                      Theme.of(context).textTheme.headlineMedium!.fontSize! *
+                      Theme.of(context).textTheme.labelMedium!.fontSize! *
                       fontScalingFactor,
                   backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  textColor: Theme.of(context).textTheme.headlineMedium!.color!,
+                  textColor: Theme.of(context).textTheme.labelMedium!.color!,
                   fontFamily: Theme.of(
                     context,
-                  ).textTheme.headlineMedium!.fontFamily!,
+                  ).textTheme.labelMedium!.fontFamily!,
                 ),
-
-                SvgPicture.asset('assets/fingerprint.svg', width: width * 0.3),
-
+                SizedBox(width: width * 0.03),
+                SvgPicture.asset('assets/red_button.svg', width: width * 0.05),
+                SizedBox(width: width * 0.03),
                 outlinedText(
-                  _statusMessage,
+                  'to cancel.',
                   fontSize:
-                      Theme.of(context).textTheme.bodyMedium!.fontSize! *
+                      Theme.of(context).textTheme.labelMedium!.fontSize! *
                       fontScalingFactor,
                   backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  textColor: Theme.of(context).textTheme.bodyMedium!.color!,
+                  textColor: Theme.of(context).textTheme.labelMedium!.color!,
                   fontFamily: Theme.of(
                     context,
-                  ).textTheme.bodyMedium!.fontFamily!,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    outlinedText(
-                      'Press',
-                      fontSize:
-                          Theme.of(context).textTheme.labelMedium!.fontSize! *
-                          fontScalingFactor,
-                      backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      textColor: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.color!,
-                      fontFamily: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.fontFamily!,
-                    ),
-                    SizedBox(width: width * 0.03),
-                    SvgPicture.asset(
-                      'assets/red_button.svg',
-                      width: width * 0.05,
-                    ),
-                    SizedBox(width: width * 0.03),
-                    outlinedText(
-                      'to cancel.',
-                      fontSize:
-                          Theme.of(context).textTheme.labelMedium!.fontSize! *
-                          fontScalingFactor,
-                      backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      textColor: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.color!,
-                      fontFamily: Theme.of(
-                        context,
-                      ).textTheme.labelMedium!.fontFamily!,
-                    ),
-                  ],
+                  ).textTheme.labelMedium!.fontFamily!,
                 ),
               ],
-            );
-          },
-        ),
-      ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

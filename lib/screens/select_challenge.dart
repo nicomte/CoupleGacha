@@ -111,7 +111,7 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
               ],
             ),
           ),
-          Expanded(child: SelectAndReturnInfo()),
+          Expanded(child: SelectAndReturnInfo.selectOrReturn()),
         ],
       ),
     );
