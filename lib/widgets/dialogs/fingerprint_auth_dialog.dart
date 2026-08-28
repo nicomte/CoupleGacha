@@ -6,6 +6,7 @@ import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
+import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:m5_fpc1020a/m5_fpc1020a.dart';
@@ -50,7 +51,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    if (_subscription != null) _subscription!.cancel();
     _fingerprintSensor.dispose();
     super.dispose();
   }
@@ -162,36 +163,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
               textColor: Theme.of(context).textTheme.bodyMedium!.color!,
               fontFamily: Theme.of(context).textTheme.bodyMedium!.fontFamily!,
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                outlinedText(
-                  'Press',
-                  fontSize:
-                      Theme.of(context).textTheme.labelMedium!.fontSize! *
-                      fontScalingFactor,
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  textColor: Theme.of(context).textTheme.labelMedium!.color!,
-                  fontFamily: Theme.of(
-                    context,
-                  ).textTheme.labelMedium!.fontFamily!,
-                ),
-                SizedBox(width: width * 0.03),
-                SvgPicture.asset('assets/red_button.svg', width: width * 0.05),
-                SizedBox(width: width * 0.03),
-                outlinedText(
-                  'to cancel.',
-                  fontSize:
-                      Theme.of(context).textTheme.labelMedium!.fontSize! *
-                      fontScalingFactor,
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  textColor: Theme.of(context).textTheme.labelMedium!.color!,
-                  fontFamily: Theme.of(
-                    context,
-                  ).textTheme.labelMedium!.fontFamily!,
-                ),
-              ],
-            ),
+            SelectAndReturnInfo.singleOption(buttonAsset: 'assets/red_button.svg', actionText: 'to cancel.')
           ],
         );
       },

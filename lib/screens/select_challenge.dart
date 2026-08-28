@@ -3,8 +3,9 @@ import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
-import 'package:couple_gacha/storage/active_challenges.dart';
+//import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/storage/challenges.dart';
+import 'package:couple_gacha/widgets/dialogs/reveal_challenge.dart';
 import 'package:couple_gacha/widgets/select_challenge/challenge_element.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:flutter/material.dart';
@@ -65,8 +66,11 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
         _increaseIndex();
         break;
       case NavInput.select:
+        RevealChallenge.open(context, challenges[_activeChallengeIndex]);
+        /*
         activeChallenges[widget.activePlayerId] = challenges[_activeChallengeIndex].challengeText;
         Navigator.of(context).pop();
+        */
     }
   }
 

@@ -46,7 +46,7 @@ final challenges = [
     challengeCategory: ChallengeCategory.creative.category()
   ),
     Challenge(
-    challengeId: 2,
+    challengeId: 3,
     challengeText: 'Plan walk to location.',
     challengePoints: 5,
     challengeCategory: ChallengeCategory.activity.category()
