@@ -44,7 +44,6 @@ class _RevealChallengeState extends State<RevealChallenge>
       begin: 0,
       end: 2 * pi,
     ).animate(_controller);
-    //_controller.forward();
   }
 
   @override
