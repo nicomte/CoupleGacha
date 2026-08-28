@@ -1,1 +1,1 @@
-final activeChallenges = <int, String>{};
+final activeChallenges = <int, String>{8:'Short text.'};
