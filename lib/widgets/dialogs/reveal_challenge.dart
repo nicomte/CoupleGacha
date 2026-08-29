@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/storage/challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
@@ -12,13 +13,14 @@ import 'package:flutter_svg/svg.dart';
 
 class RevealChallenge extends StatefulWidget {
   final Challenge challenge;
+  final int activePlayerId;
 
-  const RevealChallenge({super.key, required this.challenge});
+  const RevealChallenge({super.key, required this.challenge, required this.activePlayerId});
 
-  static Future<void> open(BuildContext context, Challenge challengeId) {
+  static Future<void> open(BuildContext context, Challenge challengeId, int activePlayerId) {
     return GachaDialog.show<void>(
       context,
-      RevealChallenge(challenge: challengeId),
+      RevealChallenge(challenge: challengeId, activePlayerId: activePlayerId,),
     );
   }
 
@@ -37,13 +39,13 @@ class _RevealChallengeState extends State<RevealChallenge>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 5),
-    )..repeat();
+      duration: Duration(seconds: 2),
+    )..forward();
 
     _angle = Tween<double>(
       begin: 0,
-      end: 2 * pi,
-    ).animate(_controller);
+      end: 5 * 2 * pi + pi,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -61,6 +63,7 @@ class _RevealChallengeState extends State<RevealChallenge>
   }
 
   void _inputProcessor(NavInput input) {
+    if (_subscription == null) return;
     switch (input) {
       case NavInput.up:
         // Nothing to do
@@ -75,11 +78,17 @@ class _RevealChallengeState extends State<RevealChallenge>
         // Nothing to do
         break;
       case NavInput.select:
-        Navigator.of(context).pop();
+      activeChallenges[widget.activePlayerId] = widget.challenge.challengeText;
+        Navigator.of(context).pop(true);
+        break;
       case NavInput.back:
         // Nothing to do
         break;
     }
+  }
+
+  double _getNormalizedAngle(double angle){
+    return angle % (2*pi);
   }
 
   @override
@@ -111,10 +120,51 @@ class _RevealChallengeState extends State<RevealChallenge>
                   ..setEntry(3, 2, 0.001)
                   ..rotateY(_angle.value),
                 alignment: FractionalOffset.center,
-                child: SvgPicture.asset(
-                  'assets/challenge_reveal_card.svg',
-                  height: height * 0.7,
-                ),
+                child:
+                    _getNormalizedAngle(_angle.value) >= pi / 2 && _getNormalizedAngle(_angle.value) <= 1.5 * pi ||
+                        _angle.isCompleted
+                    ? Stack(
+                        alignment: AlignmentDirectional.center,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/challenge_text_reveal_card.svg',
+                            height: height * 0.7,
+                          ),
+                          Positioned.fill(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: height * 0.7 * 0.08,
+                              ),
+                              child: Center(
+                                child: Transform.flip(
+                                  flipX: true,
+                                  child: outlinedText(
+                                    widget.challenge.challengeText,
+                                    fontSize:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium!.fontSize! *
+                                        fontScalingFactor,
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.tertiary,
+                                    textColor: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium!.color!,
+                                    fontFamily: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium!.fontFamily!,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : SvgPicture.asset(
+                        'assets/challenge_reveal_card.svg',
+                        height: height * 0.7,
+                      ),
               ),
             ),
             SelectAndReturnInfo.singleOption(

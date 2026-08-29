@@ -74,7 +74,7 @@ class SelectAndReturnInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final double fontScalingFactor = constraints.maxWidth * 0.0015;
+      final double fontScalingFactor = constraints.maxWidth * 0.002;
       final double spacerWidth = constraints.maxWidth * 0.01;
       final double buttonWidth = constraints.maxWidth * 0.02;
 

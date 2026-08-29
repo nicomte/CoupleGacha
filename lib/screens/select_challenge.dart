@@ -3,8 +3,11 @@ import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/route_observer.dart';
+import 'package:couple_gacha/storage/active_challenges.dart';
 //import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/storage/challenges.dart';
+import 'package:couple_gacha/widgets/dialogs/replace_active_challenge.dart';
 import 'package:couple_gacha/widgets/dialogs/reveal_challenge.dart';
 import 'package:couple_gacha/widgets/select_challenge/challenge_element.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
@@ -31,6 +34,7 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
       context,
     ).inputSource.events.listen(_inputProcessor);
     super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
   @override
@@ -47,32 +51,55 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
     super.dispose();
   }
 
-  void _inputProcessor(NavInput input) {
-    if (!_acceptsInput) return;
+  Future<void> _inputProcessor(NavInput input) async {
+  if (!_acceptsInput) return;
 
-    switch (input) {
-      case NavInput.back:
+  switch (input) {
+    case NavInput.back:
       Navigator.of(context).pop();
-      case NavInput.up:
+      break;
+    case NavInput.up:
+    case NavInput.down:
       // Nothing to do
       break;
-      case NavInput.down:
-      // Nothing to do
+    case NavInput.left:
+      _decreaseIndex();
       break;
-      case NavInput.left:
-        _decreaseIndex();
-        break;
-      case NavInput.right:
-        _increaseIndex();
-        break;
-      case NavInput.select:
-        RevealChallenge.open(context, challenges[_activeChallengeIndex]);
-        /*
-        activeChallenges[widget.activePlayerId] = challenges[_activeChallengeIndex].challengeText;
-        Navigator.of(context).pop();
-        */
-    }
+    case NavInput.right:
+      _increaseIndex();
+      break;
+    case NavInput.select:
+      await _handleSelect();
+      break;
   }
+}
+
+Future<void> _handleSelect() async {
+  if (activeChallenges.containsKey(widget.activePlayerId)) {
+    final result = await ReplaceActiveChallenge.open(
+      context,
+      widget.activePlayerId,
+    );
+    if (result != true) return;
+    if (!mounted) return;
+  }
+
+  await _revealChallengeAndClose();
+}
+
+Future<void> _revealChallengeAndClose() async {
+  await RevealChallenge.open(
+    context,
+    challenges[_activeChallengeIndex],
+    widget.activePlayerId,
+  );
+  if (!mounted) return;
+
+  _acceptsInput = false;
+  await Future.delayed(const Duration(milliseconds: 300));
+  if (!mounted) return;
+  Navigator.of(context).pop();
+}
 
   void _increaseIndex() {
     setState(() {
