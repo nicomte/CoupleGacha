@@ -59,6 +59,7 @@ class _RevealChallengeState extends State<RevealChallenge>
   @override
   void dispose() {
     if (_subscription != null) _subscription!.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
