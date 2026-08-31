@@ -12,10 +12,21 @@ import 'package:flutter_svg/svg.dart';
 import 'package:m5_fpc1020a/m5_fpc1020a.dart';
 
 class FingerprintAuthDialog extends StatefulWidget {
-  const FingerprintAuthDialog({super.key});
+  final String dialogText;
 
-  static Future<AuthResult?> open(BuildContext context) {
-    return GachaDialog.show<AuthResult>(context, const FingerprintAuthDialog());
+  const FingerprintAuthDialog({
+    super.key,
+    this.dialogText = 'Put registered finger on sensor to authenticate.',
+  });
+
+  static Future<AuthResult?> open(
+    BuildContext context, {
+    String dialogText = 'Put registered finger on sensor to authenticate.',
+  }) {
+    return GachaDialog.show<AuthResult>(
+      context,
+      FingerprintAuthDialog(dialogText: dialogText),
+    );
   }
 
   @override
@@ -141,7 +152,7 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             outlinedText(
-              'Put registered finger on sensor to authenticate.',
+              widget.dialogText,
               fontSize:
                   Theme.of(context).textTheme.headlineMedium!.fontSize! *
                   fontScalingFactor,
@@ -163,7 +174,10 @@ class _FingerprintAuthDialogState extends State<FingerprintAuthDialog> {
               textColor: Theme.of(context).textTheme.bodyMedium!.color!,
               fontFamily: Theme.of(context).textTheme.bodyMedium!.fontFamily!,
             ),
-            SelectAndReturnInfo.singleOption(buttonAsset: 'assets/red_button.svg', actionText: 'to cancel.')
+            SelectAndReturnInfo.singleOption(
+              buttonAsset: 'assets/red_button.svg',
+              actionText: 'to cancel.',
+            ),
           ],
         );
       },

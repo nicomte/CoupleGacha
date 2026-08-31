@@ -1,1 +1,1 @@
-final activeChallenges = <int, String>{8:'a challenge'};
+final activeChallenges = <int, int>{100:1};

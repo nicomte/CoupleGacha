@@ -1,39 +1,70 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
+import 'package:couple_gacha/route_observer.dart';
+import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/storage/challenges.dart';
+import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
+import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-class ReplaceActiveChallenge extends StatefulWidget {
-  final dynamic activeChallengeId;
+class ConfirmChallengeSuccess extends StatefulWidget {
+  final int activeChallengeId;
+  final int activePlayerId;
 
-  const ReplaceActiveChallenge({super.key, required this.activeChallengeId});
+  const ConfirmChallengeSuccess({
+    super.key,
+    required this.activeChallengeId,
+    required this.activePlayerId,
+  });
 
-  static Future<bool?> open(BuildContext context, int activeChallengeId) {
+  static Future<bool?> open(
+    BuildContext context,
+    int activeChallengeId,
+    int activePlayerId,
+  ) {
     return GachaDialog.show<bool>(
       context,
-      ReplaceActiveChallenge(activeChallengeId: activeChallengeId),
+      ConfirmChallengeSuccess(
+        activeChallengeId: activeChallengeId,
+        activePlayerId: activePlayerId,
+      ),
     );
   }
 
   @override
-  State<StatefulWidget> createState() => _ReplaceActiveChallengeState();
+  State<ConfirmChallengeSuccess> createState() =>
+      _ConfirmChallengeSuccessState();
 }
 
-class _ReplaceActiveChallengeState extends State<ReplaceActiveChallenge> {
+class _ConfirmChallengeSuccessState extends State<ConfirmChallengeSuccess>
+    with RouteAware {
   StreamSubscription<NavInput>? _subscription;
+
+  bool _acceptsInput = true;
+
+  @override
+  void didPushNext() => setState(() => _acceptsInput = false);
+
+  @override
+  void didPopNext() => setState(() => _acceptsInput = true);
 
   @override
   void didChangeDependencies() {
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
+
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+
     super.didChangeDependencies();
   }
 
@@ -43,8 +74,22 @@ class _ReplaceActiveChallengeState extends State<ReplaceActiveChallenge> {
     super.dispose();
   }
 
-  void _inputProcessor(NavInput input) {
-    if (_subscription == null) return;
+  void _awardPoints() {
+    final activePlayerIndex = players.indexWhere(
+      (player) => player.playerId == widget.activePlayerId,
+    );
+
+    players[activePlayerIndex].addPoints(
+      challenges.firstWhere((c) => c.challengeId == widget.activeChallengeId).challengePoints,
+    );
+  }
+
+  void _updateActiveChallenge() {
+    activeChallenges.remove(activeChallenges.entries.toList().firstWhere((c)=> c.value == widget.activeChallengeId).key);
+  }
+
+  Future<void> _inputProcessor(NavInput input) async {
+    if (!_acceptsInput) return;
     switch (input) {
       case NavInput.up:
         // Nothing to do
@@ -59,8 +104,42 @@ class _ReplaceActiveChallengeState extends State<ReplaceActiveChallenge> {
         // Nothing to do
         break;
       case NavInput.select:
-        Navigator.of(context).pop(true);
-        break;
+        final result = await FingerprintAuthDialog.open(context, dialogText: 'Put partners finger on sensor to confirm.');
+
+        switch (result) {
+          case null:
+            // Nothing to do
+            break;
+
+          case AuthSuccess(:final userId):
+            if (userId == widget.activePlayerId) {
+              if (!mounted) return;
+              WarningPopup.show(
+                context,
+                'This was the wrong persons finger.',
+                Duration(seconds: 3),
+              );
+              break;
+            } else {
+              _awardPoints();
+              _updateActiveChallenge();
+
+              await Future.delayed(const Duration(seconds: 1));
+
+              if (!mounted) return;
+              Navigator.of(context).pop(true);
+              return;
+            }
+
+          case AuthCancelled():
+            // Nothing to do
+            break;
+
+          case AuthFailed():
+            // Nothing to do
+            break;
+        }
+
       case NavInput.back:
         Navigator.of(context).pop(false);
         break;
@@ -83,7 +162,7 @@ class _ReplaceActiveChallengeState extends State<ReplaceActiveChallenge> {
               child: FittedBox(
                 fit: BoxFit.contain,
                 child: outlinedText(
-                  'You already have an active challenge: ',
+                  'Mark this challenge as finished?',
                   fontSize:
                       Theme.of(context).textTheme.headlineMedium!.fontSize! *
                       fontScalingFactor,
@@ -109,7 +188,11 @@ class _ReplaceActiveChallengeState extends State<ReplaceActiveChallenge> {
                     ),
                     child: Center(
                       child: outlinedText(
-                        challenges.firstWhere((c) => c.challengeId == widget.activeChallengeId).challengeText,
+                        challenges
+                            .firstWhere(
+                              (c) => c.challengeId == widget.activeChallengeId,
+                            )
+                            .challengeText,
                         fontSize:
                             Theme.of(context).textTheme.bodyMedium!.fontSize! *
                             fontScalingFactor,
@@ -126,26 +209,9 @@ class _ReplaceActiveChallengeState extends State<ReplaceActiveChallenge> {
                 ),
               ],
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: height * 0.6 * 0.08),
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: outlinedText(
-                  'Would you like to replace it?',
-                  fontSize:
-                      Theme.of(context).textTheme.headlineMedium!.fontSize! *
-                      fontScalingFactor,
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  textColor: Theme.of(context).textTheme.headlineMedium!.color!,
-                  fontFamily: Theme.of(
-                    context,
-                  ).textTheme.headlineMedium!.fontFamily!,
-                ),
-              ),
-            ),
             SelectAndReturnInfo.twoOptions(
               firstButtonAsset: 'assets/green_button.svg',
-              firstActionText: 'to replace',
+              firstActionText: 'to confirm',
               secondButtonAsset: 'assets/red_button.svg',
               secondActionText: 'to cancel',
             ),

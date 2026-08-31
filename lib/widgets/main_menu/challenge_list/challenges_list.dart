@@ -1,4 +1,5 @@
 import 'package:couple_gacha/storage/active_challenges.dart';
+import 'package:couple_gacha/storage/challenges.dart';
 import 'package:couple_gacha/storage/players.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenge_list_entry.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list_title.dart';
@@ -22,7 +23,6 @@ class ChallengesList extends StatefulWidget {
 }
 
 class _ChallengesListState extends State<ChallengesList> {
-
   @override
   Widget build(BuildContext context) {
     final challengesListSize = Size(
@@ -46,17 +46,25 @@ class _ChallengesListState extends State<ChallengesList> {
               titleText: 'Active Challenges',
               textStyle: Theme.of(context).textTheme.headlineMedium!,
             ),
-            ...activeChallenges.entries.map((entry)
-              => ChallengesListEntry(
+            ...activeChallenges.entries.toList().asMap().entries.map((indexed) {
+              final index = indexed.key; // 0, 1, ...
+              final entry =
+                  indexed.value; // MapEntry<int userId, int challengeId>
+
+              return ChallengesListEntry(
                 challengesListSize: challengesListSize,
-                entryText: entry.value,
-                playerName: players[entry.key] ?? '',
+                entryText: challenges
+                    .firstWhere((c) => c.challengeId == entry.value)
+                    .challengeText,
+                playerName: players
+                    .firstWhere((player) => player.playerId == entry.key)
+                    .playerName,
                 textStyle: Theme.of(context).textTheme.bodyMedium!,
                 isHighlighted:
-                    entry.key == widget.activeChallenge &&
+                    index == widget.activeChallenge &&
                     widget.activeMenu == ActiveMenu.challengesList,
-              ),
-            )
+              );
+            }),
           ],
         ),
       ),

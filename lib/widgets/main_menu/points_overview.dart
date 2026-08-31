@@ -1,3 +1,4 @@
+import 'package:couple_gacha/storage/players.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 
@@ -10,11 +11,6 @@ class PointsOverview extends StatefulWidget {
     required this.screenSize,
     required this.screenDiagonal
   });
-
-  static const List<(String, int)> _users = [
-    ('Player 1', 100),
-    ('Player 2', 100),
-  ];
 
   @override
   State<PointsOverview> createState() => _PointsOverviewState();
@@ -71,10 +67,10 @@ class _PointsOverviewState extends State<PointsOverview> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ...PointsOverview._users.asMap().entries.map((entry) {
+                  ...players.asMap().entries.map((entry) {
                     final index = entry.key;
-                    final user = entry.value.$1;
-                    final points = entry.value.$2;
+                    final user = entry.value.playerName;
+                    final points = entry.value.points;
                     return Expanded(
                       child: Container(
                         color: index % 2 == 0

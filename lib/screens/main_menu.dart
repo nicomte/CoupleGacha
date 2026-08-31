@@ -8,6 +8,7 @@ import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/storage/active_challenges.dart';
+import 'package:couple_gacha/widgets/dialogs/confirm_challenge_success.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
@@ -75,7 +76,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.counterClockwise);
           } else {
-            _activeChallenge = _toggleActiveChallenge();
+            if (activeChallenges.length>1)  _activeChallenge = _toggleActiveChallenge();
           }
         });
         break;
@@ -85,7 +86,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.clockwise);
           } else {
-            _activeChallenge = _toggleActiveChallenge();
+            if (activeChallenges.length>1)  _activeChallenge = _toggleActiveChallenge();
           }
         });
         break;
@@ -189,8 +190,15 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
     }
   }
 
-  void _redeemChallenge() {
-    // TODO: Implement redeemChallenge
+  Future<void> _redeemChallenge() async {
+    final activeChallenge = activeChallenges.entries.toList()[_activeChallenge];
+    final challengeFinished = await ConfirmChallengeSuccess.open(context, activeChallenge.value, activeChallenge.key);
+        if (challengeFinished!=null && challengeFinished) {
+          setState(() {
+            _activeMenu = ActiveMenu.rotatingMenu;
+            _activeChallenge = 0;
+          });
+        }  
   }
 
   void _openCheckRewards() {

@@ -78,7 +78,7 @@ class _RevealChallengeState extends State<RevealChallenge>
         // Nothing to do
         break;
       case NavInput.select:
-      activeChallenges[widget.activePlayerId] = widget.challenge.challengeText;
+      activeChallenges[widget.activePlayerId] = widget.challenge.challengeId;
         Navigator.of(context).pop(true);
         break;
       case NavInput.back:

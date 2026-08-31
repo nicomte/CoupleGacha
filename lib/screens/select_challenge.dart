@@ -5,7 +5,6 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/storage/active_challenges.dart';
-//import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/storage/challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/replace_active_challenge.dart';
 import 'package:couple_gacha/widgets/dialogs/reveal_challenge.dart';
@@ -78,7 +77,7 @@ Future<void> _handleSelect() async {
   if (activeChallenges.containsKey(widget.activePlayerId)) {
     final result = await ReplaceActiveChallenge.open(
       context,
-      widget.activePlayerId,
+      activeChallenges[widget.activePlayerId]!
     );
     if (result != true) return;
     if (!mounted) return;

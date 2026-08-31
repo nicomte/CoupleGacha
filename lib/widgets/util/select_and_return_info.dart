@@ -22,7 +22,7 @@ class SelectAndReturnInfo extends StatelessWidget {
 
   const SelectAndReturnInfo({super.key, required this.segments});
 
-  /// "Press <green> to select or <red> to return."
+  // "Press <green> to select or <red> to return."
   factory SelectAndReturnInfo.selectOrReturn({
     Key? key,
     String selectButtonAsset = 'assets/green_button.svg',
