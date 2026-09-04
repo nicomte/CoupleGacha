@@ -103,6 +103,7 @@ class _WarningPopupState extends State<WarningPopup>
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.error,
                 borderRadius: BorderRadius.all(Radius.circular(10)),
+                border: Border.all(color: Colors.white, width: 3.0)
               ),
 
               child: outlinedText(

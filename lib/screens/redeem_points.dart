@@ -7,6 +7,7 @@ import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/storage/players.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
+import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -22,7 +23,10 @@ class RedeemPoints extends StatefulWidget {
 class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTickerProviderStateMixin {
   bool _acceptsInput = true;
   StreamSubscription<NavInput>? _subscription;
-  int activeOptionIndex = 0;
+  int _activeOptionIndex = 0;
+
+  late int _playerPointAmount;
+  int _pointCost = 1;
 
   late final AnimationController _controller;
   // Grows the currently-active heart from 1.0 -> 1.125
@@ -32,6 +36,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
 
   @override
   void initState() {
+    _playerPointAmount = players.firstWhere((p) => p.playerId == widget.activePlayerId).points;
     _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 100));
     _growAnimation = Tween<double>(begin: 1, end: 1.125).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _shrinkAnimation = Tween<double>(begin: 1.125, end: 1).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
@@ -73,23 +78,30 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         // Nothing to do
         break;
       case NavInput.left:
-        setState(() => activeOptionIndex = activeOptionIndex == 0 ? 1 : 0);
+        setState(() {
+          _activeOptionIndex = _activeOptionIndex == 0 ? 1 : 0;
+          _pointCost = _pointCost == 1 ? 9 : 1;
+        });
         _controller.forward(from: 0);
         break;
       case NavInput.right:
-        setState(() => activeOptionIndex = activeOptionIndex == 0 ? 1 : 0);
+        setState(() {
+          _activeOptionIndex = _activeOptionIndex == 0 ? 1 : 0;
+          _pointCost = _pointCost == 1 ? 9 : 1;
+        });
         _controller.forward(from: 0);
         break;
       case NavInput.select:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        if (_playerPointAmount <= _pointCost){
+          WarningPopup.show(context, 'Not enough points', Duration(seconds: 3));
+        }
       case NavInput.back:
         Navigator.of(context).pop();
     }
   }
 
   Widget _buildHeart(int index, double screenDiagonal) {
-    final bool isHighlighted = index == activeOptionIndex;
+    final bool isHighlighted = index == _activeOptionIndex;
     return ScaleTransition(
       scale: isHighlighted ? _growAnimation : _shrinkAnimation,
       child: SvgPicture.asset(
@@ -107,9 +119,6 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
 
   @override
   Widget build(BuildContext context) {
-    int playersPoints = players
-        .firstWhere((p) => p.playerId == widget.activePlayerId)
-        .points;
     double screenDiagonal = sqrt(
       pow(MediaQuery.of(context).size.height, 2) +
           pow(MediaQuery.of(context).size.width, 2),
@@ -120,7 +129,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           outlinedText(
-            'You have $playersPoints points',
+            'You have $_playerPointAmount points',
             fontSize:
                 Theme.of(context).textTheme.headlineMedium!.fontSize! *
                 fontScalingFactor,
