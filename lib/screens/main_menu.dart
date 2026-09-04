@@ -5,6 +5,7 @@ import 'package:couple_gacha/domain/main_menu_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
+import 'package:couple_gacha/screens/redeem_points.dart';
 import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/storage/active_challenges.dart';
@@ -216,8 +217,29 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
     // TODO: Navigate to player settings.
   }
 
-  void _openRedeemPoints() {
-    // TODO: Navigate to redeem points.
+  Future<void> _openRedeemPoints() async {
+    final result = await FingerprintAuthDialog.open(context);
+
+    if (!mounted) return;
+
+    switch (result) {
+      case null:
+        // Nothing to do
+        break;
+      case AuthSuccess(:final userId):
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => RedeemPoints(activePlayerId: userId),
+          ),
+        );
+      case AuthCancelled():
+        // Nothing to do
+        break;
+      case AuthFailed():
+        // Nothing to do
+        break;
+    }
+
   }
 
   Future<void> _openSelectChallenge() async {

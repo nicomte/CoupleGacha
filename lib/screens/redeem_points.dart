@@ -134,6 +134,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
               Column(
                 children: [
                   _buildHeart(0, screenDiagonal),
+                  SizedBox(height: screenDiagonal * 0.01),
                   outlinedText(
                     '1 Pull = 1 Point',
                     fontSize:
@@ -150,6 +151,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
               Column(
                 children: [
                   _buildHeart(1, screenDiagonal),
+                  SizedBox(height: screenDiagonal * 0.01),
                   outlinedText(
                     '10 Pulls = 9 Points',
                     fontSize:
