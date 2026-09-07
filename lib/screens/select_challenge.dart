@@ -47,6 +47,7 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
     if (_subscription != null) {
       _subscription!.cancel();
     }
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 

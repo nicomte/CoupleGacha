@@ -19,6 +19,6 @@ class Player {
 }
 
 final players = [
-    Player(playerId: 8, playerName: 'Nico', points: 0),
+    Player(playerId: 8, playerName: 'Nico', points: 10),
     Player(playerId: 100, playerName: 'Monique', points: 0),
   ];

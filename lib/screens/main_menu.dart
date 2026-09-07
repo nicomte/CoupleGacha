@@ -50,6 +50,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   @override
   void dispose() {
     _subscription?.cancel();
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 

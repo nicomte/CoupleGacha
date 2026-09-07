@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
+import 'package:couple_gacha/screens/gacha_reveal.dart';
 import 'package:couple_gacha/storage/players.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
@@ -65,6 +66,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
   void dispose() {
     if (_subscription != null) _subscription!.cancel();
     _controller.dispose();
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 
@@ -74,9 +76,11 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
       case NavInput.up:
         // Nothing to do
         break;
+
       case NavInput.down:
         // Nothing to do
         break;
+
       case NavInput.left:
         setState(() {
           _activeOptionIndex = _activeOptionIndex == 0 ? 1 : 0;
@@ -84,6 +88,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         });
         _controller.forward(from: 0);
         break;
+
       case NavInput.right:
         setState(() {
           _activeOptionIndex = _activeOptionIndex == 0 ? 1 : 0;
@@ -91,10 +96,14 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         });
         _controller.forward(from: 0);
         break;
+
       case NavInput.select:
         if (_playerPointAmount <= _pointCost){
           WarningPopup.show(context, 'Not enough points', Duration(seconds: 3));
+        } else {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => GachaReveal(activePlayerId: widget.activePlayerId, pullAmount: _activeOptionIndex == 0 ? 1 : 10)));
         }
+
       case NavInput.back:
         Navigator.of(context).pop();
     }

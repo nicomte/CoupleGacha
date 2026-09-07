@@ -71,6 +71,7 @@ class _ConfirmChallengeSuccessState extends State<ConfirmChallengeSuccess>
   @override
   void dispose() {
     if (_subscription != null) _subscription!.cancel();
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 
