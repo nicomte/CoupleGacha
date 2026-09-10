@@ -101,6 +101,9 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         if (_playerPointAmount <= _pointCost){
           WarningPopup.show(context, 'Not enough points', Duration(seconds: 3));
         } else {
+          setState(() {
+            
+          });
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => GachaReveal(activePlayerId: widget.activePlayerId, pullAmount: _activeOptionIndex == 0 ? 1 : 10)));
         }
 
