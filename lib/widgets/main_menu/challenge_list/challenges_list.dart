@@ -56,7 +56,7 @@ class _ChallengesListState extends State<ChallengesList> {
                 entryText: challenges
                     .firstWhere((c) => c.challengeId == entry.value)
                     .challengeText,
-                playerName: players
+                playerName: playerStore.players
                     .firstWhere((player) => player.playerId == entry.key)
                     .playerName,
                 textStyle: Theme.of(context).textTheme.bodyMedium!,

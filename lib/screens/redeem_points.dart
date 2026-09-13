@@ -5,7 +5,9 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/screens/gacha_reveal.dart';
+import 'package:couple_gacha/storage/player_rewards.dart';
 import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/storage/rewards.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:couple_gacha/widgets/util/warning_popup.dart';
@@ -26,7 +28,6 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
   StreamSubscription<NavInput>? _subscription;
   int _activeOptionIndex = 0;
 
-  late int _playerPointAmount;
   int _pointCost = 1;
 
   late final AnimationController _controller;
@@ -37,7 +38,6 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
 
   @override
   void initState() {
-    _playerPointAmount = players.firstWhere((p) => p.playerId == widget.activePlayerId).points;
     _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 100));
     _growAnimation = Tween<double>(begin: 1, end: 1.125).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _shrinkAnimation = Tween<double>(begin: 1.125, end: 1).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
@@ -98,13 +98,21 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         break;
 
       case NavInput.select:
-        if (_playerPointAmount <= _pointCost){
+        if (playerStore.pointsOf(widget.activePlayerId) < _pointCost){
           WarningPopup.show(context, 'Not enough points', Duration(seconds: 3));
         } else {
-          setState(() {
-            
-          });
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => GachaReveal(activePlayerId: widget.activePlayerId, pullAmount: _activeOptionIndex == 0 ? 1 : 10)));
+          playerStore.subtractPoints(widget.activePlayerId, _pointCost);
+
+          final List<int> rewards = RewardRoller.roll(_pointCost == 1 ? 1 : 10);
+
+          for (int rewardId in rewards){
+          playerRewards
+          .putIfAbsent(widget.activePlayerId, () => <int, int>{})
+          .update(rewardId, (count) => count + 1, ifAbsent: () => 1);
+          }
+          
+
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => GachaReveal(activePlayerId: widget.activePlayerId, rewardId: rewards)));
         }
 
       case NavInput.back:
@@ -140,14 +148,15 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          outlinedText(
-            'You have $_playerPointAmount points',
-            fontSize:
-                Theme.of(context).textTheme.headlineMedium!.fontSize! *
-                fontScalingFactor,
-            backgroundColor: Theme.of(context).colorScheme.tertiary,
-            textColor: Theme.of(context).textTheme.headlineMedium!.color!,
-            fontFamily: Theme.of(context).textTheme.headlineMedium!.fontFamily!,
+          ListenableBuilder(
+            listenable: playerStore,
+            builder: (context, _) => outlinedText(
+              'You have ${playerStore.pointsOf(widget.activePlayerId)} points',
+              fontSize: Theme.of(context).textTheme.headlineMedium!.fontSize! * fontScalingFactor,
+              backgroundColor: Theme.of(context).colorScheme.tertiary,
+              textColor: Theme.of(context).textTheme.headlineMedium!.color!,
+              fontFamily: Theme.of(context).textTheme.headlineMedium!.fontFamily!,
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -67,7 +67,7 @@ class _PointsOverviewState extends State<PointsOverview> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ...players.asMap().entries.map((entry) {
+                  ...playerStore.players.asMap().entries.map((entry) {
                     final index = entry.key;
                     final user = entry.value.playerName;
                     final points = entry.value.points;

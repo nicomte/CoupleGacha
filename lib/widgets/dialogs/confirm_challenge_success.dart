@@ -76,13 +76,7 @@ class _ConfirmChallengeSuccessState extends State<ConfirmChallengeSuccess>
   }
 
   void _awardPoints() {
-    final activePlayerIndex = players.indexWhere(
-      (player) => player.playerId == widget.activePlayerId,
-    );
-
-    players[activePlayerIndex].addPoints(
-      challenges.firstWhere((c) => c.challengeId == widget.activeChallengeId).challengePoints,
-    );
+    playerStore.addPoints(widget.activeChallengeId, challenges.firstWhere((c) => c.challengeId == widget.activeChallengeId).challengePoints);
   }
 
   void _updateActiveChallenge() {

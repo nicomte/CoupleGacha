@@ -13,12 +13,12 @@ enum _Phase { revealing, listing, done }
 
 class GachaReveal extends StatefulWidget {
   final int activePlayerId;
-  final int pullAmount;
+  final List<int> rewardId;
 
   const GachaReveal({
     super.key,
     required this.activePlayerId,
-    required this.pullAmount,
+    required this.rewardId,
   });
 
   @override
@@ -74,8 +74,8 @@ class _GachaRevealState extends State<GachaReveal>
     // One CurvedAnimation per element, staggered so they cascade in rather
     // than all sliding at once. Built once — pullAmount is fixed for the
     // widget's lifetime, so there's no need to rebuild this list later.
-    _slideCurves = List.generate(widget.pullAmount, (i) {
-      final start = (i / widget.pullAmount) * 0.5;
+    _slideCurves = List.generate(widget.rewardId.length, (i) {
+      final start = (i / widget.rewardId.length) * 0.5;
       final end = (start + 0.5).clamp(0.0, 1.0);
       return CurvedAnimation(
         parent: _listController,
@@ -120,9 +120,9 @@ class _GachaRevealState extends State<GachaReveal>
       case _Phase.revealing:
         if (!_revealController.isCompleted) return; // spin still running
 
-        if (widget.pullAmount == 1) Navigator.of(context).pop();
+        if (widget.rewardId.length == 1) Navigator.of(context).pop();
 
-        if (_dynamicRewardIndex + 1 < widget.pullAmount) {
+        if (_dynamicRewardIndex + 1 < widget.rewardId.length) {
           setState(() => _dynamicRewardIndex++);
           _revealController
             ..reset()
@@ -142,97 +142,110 @@ class _GachaRevealState extends State<GachaReveal>
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  final screenSize = MediaQuery.of(context).size;
-  final screenDiagonal = sqrt(
-    pow(screenSize.width, 2) + pow(screenSize.height, 2),
-  );
-  final height = screenSize.width / 18;
-  final width = screenSize.height * 0.9;
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenDiagonal = sqrt(
+      pow(screenSize.width, 2) + pow(screenSize.height, 2),
+    );
+    final height = screenSize.width / 18;
+    final width = screenSize.height * 0.9;
 
-  final Widget footer = SelectAndReturnInfo.singleOption(
-    buttonAsset: 'assets/green_button.svg',
-    actionText: _phase == _Phase.revealing ? 'to continue.' : 'to return.',
-  );
+    final Widget footer = SelectAndReturnInfo.singleOption(
+      buttonAsset: 'assets/green_button.svg',
+      actionText: _phase == _Phase.revealing ? 'to continue.' : 'to return.',
+    );
 
-  final Widget body;
-  switch (_phase) {
-    case _Phase.revealing:
-      body = Column(
-        children: [
-          Expanded(
-  child: Padding(
-    padding: const EdgeInsets.only(top: 24.0),
-    child: Center(
-      child: AnimatedBuilder(
-        animation: _revealController,
-        builder: (context, child) => Transform.scale(
-          scale: _scale.value,
-          child: Transform.rotate(angle: _angle.value, child: child),
-        ),
-        child: RedeemChallengeElement(
-          rewardText: rewards[_dynamicRewardIndex].text,
-          screenDiagonal: screenDiagonal,
-          width: width,
-          height: height,
-        ),
-      ),
-    ),
-  ),
-),
-          footer,
-        ],
-      );
-      break;
-
-    case _Phase.listing:
-    case _Phase.done:
-      body = Column(
-        children: [
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // topOffset centers `width` (the element's *visual* height,
-                // note the swapped naming) within whatever space is actually
-                // left after the footer — not the full screen.
-                final topOffset = (constraints.maxHeight - width) / 2 + 24.0;
-
-                return Stack(
-                  children: [
-                    for (int i = 0; i < widget.pullAmount; i++)
-                      AnimatedBuilder(
-                        animation: _slideCurves[i],
-                        builder: (context, child) {
-                          final top = Tween<double>(
-                            begin: -width * 2,
-                            end: topOffset,
-                          ).transform(_slideCurves[i].value);
-
-                          return Positioned(
-                            top: top,
-                            left: _targetLeftFor(i, height),
-                            child: child!,
-                          );
-                        },
-                        child: RedeemChallengeElement(
-                          rewardText: rewards[i].text,
-                          screenDiagonal: screenDiagonal,
-                          width: width,
-                          height: height,
-                        ),
+    final Widget body;
+    switch (_phase) {
+      case _Phase.revealing:
+        body = Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24.0),
+                child: Center(
+                  child: AnimatedBuilder(
+                    animation: _revealController,
+                    builder: (context, child) => Transform.scale(
+                      scale: _scale.value,
+                      child: Transform.rotate(
+                        angle: _angle.value,
+                        child: child,
                       ),
-                  ],
-                );
-              },
+                    ),
+                    child: RedeemChallengeElement(
+                      rewardText: RewardCatalog.all
+                          .firstWhere(
+                            (reward) =>
+                                reward.id ==
+                                widget.rewardId[_dynamicRewardIndex],
+                          )
+                          .text,
+                      screenDiagonal: screenDiagonal,
+                      width: width,
+                      height: height,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-          footer,
-        ],
-      );
-      break;
-  }
+            footer,
+          ],
+        );
+        break;
 
-  return Scaffold(body: SafeArea(child: body));
-}
+      case _Phase.listing:
+      case _Phase.done:
+        body = Column(
+          children: [
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // topOffset centers `width` (the element's *visual* height,
+                  // note the swapped naming) within whatever space is actually
+                  // left after the footer — not the full screen.
+                  final topOffset = (constraints.maxHeight - width) / 2 + 24.0;
+
+                  return Stack(
+                    children: [
+                      for (int i = 0; i < widget.rewardId.length; i++)
+                        AnimatedBuilder(
+                          animation: _slideCurves[i],
+                          builder: (context, child) {
+                            final top = Tween<double>(
+                              begin: -width * 2,
+                              end: topOffset,
+                            ).transform(_slideCurves[i].value);
+
+                            return Positioned(
+                              top: top,
+                              left: _targetLeftFor(i, height),
+                              child: child!,
+                            );
+                          },
+                          child: RedeemChallengeElement(
+                            rewardText: RewardCatalog.all
+                                .firstWhere(
+                                  (reward) => reward.id == widget.rewardId[i],
+                                )
+                                .text,
+                            screenDiagonal: screenDiagonal,
+                            width: width,
+                            height: height,
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            footer,
+          ],
+        );
+        break;
+    }
+
+    return Scaffold(body: SafeArea(child: body));
+  }
 }
