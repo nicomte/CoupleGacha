@@ -60,7 +60,7 @@ class _GachaRevealState extends State<GachaReveal>
     );
 
     // Spin runs the full timeline.
-    _angle = Tween<double>(begin: 0, end: 5 * 2 * pi + pi/2).animate(
+    _angle = Tween<double>(begin: 0, end: 5 * 2 * pi + pi / 2).animate(
       CurvedAnimation(parent: _revealController, curve: Curves.easeOut),
     );
 
@@ -149,7 +149,7 @@ class _GachaRevealState extends State<GachaReveal>
       pow(screenSize.width, 2) + pow(screenSize.height, 2),
     );
     final height = screenSize.width / 18;
-    final width = screenSize.height * 0.9;
+    final width = screenSize.height * 0.85;
 
     final Widget footer = SelectAndReturnInfo.singleOption(
       buttonAsset: 'assets/green_button.svg',
@@ -182,6 +182,22 @@ class _GachaRevealState extends State<GachaReveal>
                                 widget.rewardId[_dynamicRewardIndex],
                           )
                           .text,
+                      borderColor: RewardCatalog.all
+                          .firstWhere(
+                            (reward) =>
+                                reward.id ==
+                                widget.rewardId[_dynamicRewardIndex],
+                          )
+                          .rarity
+                          .borderColor,
+                          fillColor: RewardCatalog.all
+                          .firstWhere(
+                            (reward) =>
+                                reward.id ==
+                                widget.rewardId[_dynamicRewardIndex],
+                          )
+                          .rarity
+                          .fillColor,
                       screenDiagonal: screenDiagonal,
                       width: width,
                       height: height,
@@ -230,6 +246,16 @@ class _GachaRevealState extends State<GachaReveal>
                                   (reward) => reward.id == widget.rewardId[i],
                                 )
                                 .text,
+                                borderColor: RewardCatalog.all
+                                .firstWhere(
+                                  (reward) => reward.id == widget.rewardId[i],
+                                )
+                                .rarity.borderColor,
+                                fillColor: RewardCatalog.all
+                                .firstWhere(
+                                  (reward) => reward.id == widget.rewardId[i],
+                                )
+                                .rarity.fillColor,
                             screenDiagonal: screenDiagonal,
                             width: width,
                             height: height,

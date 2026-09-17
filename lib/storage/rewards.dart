@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+
 class Reward {
   final int id;
   final String text;
@@ -9,14 +11,16 @@ class Reward {
 }
 
 enum Rarity {
-  loss(50),
-  common(20),
-  uncommon(15),
-  rare(10),
-  ultrarare(5);
+  loss(50,Color(0xfffae8ed), Color(0xffff4a98)),
+  common(20, Color(0xff5edc1f), Color.fromARGB(255, 176, 248, 137)),
+  uncommon(15, Color(0xff1a43bf), Color.fromARGB(255, 162, 184, 255)),
+  rare(10, Color(0xffb026ff), Color.fromARGB(255, 218, 165, 255)),
+  ultrarare(5, Color(0xfff2003c), Color.fromARGB(255, 255, 164, 184));
 
   final int weight;
-  const Rarity(this.weight);
+  final Color borderColor;
+  final Color fillColor;
+  const Rarity(this.weight, this.borderColor, this.fillColor);
 }
 
 class RewardCatalog {
