@@ -22,7 +22,7 @@ class MainApp extends StatelessWidget {
         navigatorObservers: [routeObserver],
         home: InputSourceProvider(
           inputSource: KeyboardInputSource(),
-          child: MainMenu(),
+          child: RedeemPoints(activePlayerId: 8)//MainMenu(),
         ),
       ),
     );

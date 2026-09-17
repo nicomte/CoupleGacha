@@ -1,1 +1,1 @@
-final activeChallenges = <int, int>{100:1, 8:2};
+final activeChallenges = <int, int>{};

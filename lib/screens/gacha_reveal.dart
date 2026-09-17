@@ -60,7 +60,7 @@ class _GachaRevealState extends State<GachaReveal>
     );
 
     // Spin runs the full timeline.
-    _angle = Tween<double>(begin: 0, end: 5 * 2 * pi + pi).animate(
+    _angle = Tween<double>(begin: 0, end: 5 * 2 * pi + pi/2).animate(
       CurvedAnimation(parent: _revealController, curve: Curves.easeOut),
     );
 
