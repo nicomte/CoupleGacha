@@ -3,6 +3,7 @@ import 'package:couple_gacha/navigation/keyboard_input_source.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/screens/main_menu.dart';
 import 'package:couple_gacha/screens/redeem_points.dart';
+import 'package:couple_gacha/screens/rewards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:couple_gacha/theme.dart';
 
@@ -22,7 +23,7 @@ class MainApp extends StatelessWidget {
         navigatorObservers: [routeObserver],
         home: InputSourceProvider(
           inputSource: KeyboardInputSource(),
-          child: RedeemPoints(activePlayerId: 8)//MainMenu(),
+          child: RewardsList() //MainMenu(),
         ),
       ),
     );

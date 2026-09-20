@@ -203,15 +203,28 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
         }  
   }
 
-  void _openCheckRewards() {
-    // TODO: Navigate to check rewards.
-    //
-    // Example:
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (_) => const CheckRewardsScreen(),
-    //   ),
-    // );
+  Future<void> _openCheckRewards() async {
+    final result = await FingerprintAuthDialog.open(context);
+
+    if (!mounted) return;
+
+    switch (result) {
+      case null:
+        // Nothing to do
+        break;
+      case AuthSuccess(:final userId):
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => RedeemPoints(activePlayerId: userId),
+          ),
+        );
+      case AuthCancelled():
+        // Nothing to do
+        break;
+      case AuthFailed():
+        // Nothing to do
+        break;
+    }
   }
 
   void _openPlayerSettings() {
@@ -271,7 +284,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    screenDiagonal = sqrt(pow(screenSize.width, 2) + pow(screenSize.height, 2));
+    final screenDiagonal = sqrt(pow(screenSize.width, 2) + pow(screenSize.height, 2));
 
     return Scaffold(
       body: Stack(
