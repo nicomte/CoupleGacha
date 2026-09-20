@@ -26,6 +26,17 @@ enum Rarity {
 class RewardCatalog {
   const RewardCatalog._();
 
+  static final Map<int, Reward> _byId = {
+    for (final reward in all) reward.id: reward,
+  };
+
+  /// Returns the reward with [id]. Throws if it doesn't exist.
+  static Reward getById(int id) {
+    final reward = _byId[id];
+    if (reward == null) throw ArgumentError.value(id, 'id', 'Unknown reward id');
+    return reward;
+  }
+
   static const List<Reward> all = [
     Reward(
       id: 1,

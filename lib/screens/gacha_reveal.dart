@@ -5,7 +5,7 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/storage/rewards.dart';
-import 'package:couple_gacha/widgets/redeem_challenge/redeem_challenge_element.dart';
+import 'package:couple_gacha/widgets/rewards/redeem_challenge_element.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:flutter/material.dart';
 
@@ -120,7 +120,10 @@ class _GachaRevealState extends State<GachaReveal>
       case _Phase.revealing:
         if (!_revealController.isCompleted) return; // spin still running
 
-        if (widget.rewardId.length == 1) Navigator.of(context).pop();
+        if (widget.rewardId.length == 1) {
+          Navigator.of(context).pop();
+          return;
+        }
 
         if (_dynamicRewardIndex + 1 < widget.rewardId.length) {
           setState(() => _dynamicRewardIndex++);
@@ -142,6 +145,40 @@ class _GachaRevealState extends State<GachaReveal>
     }
   }
 
+  Widget _buildRewardItem(
+    int i,
+    double width,
+    double height,
+    double topOffset,
+    double screenDiagonal,
+  ) {
+    final reward = RewardCatalog.getById(widget.rewardId[i]);
+
+    return AnimatedBuilder(
+      animation: _slideCurves[i],
+      builder: (context, child) {
+        final top = Tween<double>(
+          begin: -width * 2,
+          end: topOffset,
+        ).transform(_slideCurves[i].value);
+
+        return Positioned(
+          top: top,
+          left: _targetLeftFor(i, height),
+          child: child!,
+        );
+      },
+      child: RedeemChallengeElement(
+        rewardText: reward.text,
+        borderColor: reward.rarity.borderColor,
+        fillColor: reward.rarity.fillColor,
+        screenDiagonal: screenDiagonal,
+        width: width,
+        height: height,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -159,56 +196,42 @@ class _GachaRevealState extends State<GachaReveal>
     final Widget body;
     switch (_phase) {
       case _Phase.revealing:
-        body = Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 24.0),
-                child: Center(
-                  child: AnimatedBuilder(
-                    animation: _revealController,
-                    builder: (context, child) => Transform.scale(
-                      scale: _scale.value,
-                      child: Transform.rotate(
-                        angle: _angle.value,
-                        child: child,
+        {
+          final reward = RewardCatalog.getById(
+            widget.rewardId[_dynamicRewardIndex],
+          );
+
+          body = Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: Center(
+                    child: AnimatedBuilder(
+                      animation: _revealController,
+                      builder: (context, child) => Transform.scale(
+                        scale: _scale.value,
+                        child: Transform.rotate(
+                          angle: _angle.value,
+                          child: child,
+                        ),
                       ),
-                    ),
-                    child: RedeemChallengeElement(
-                      rewardText: RewardCatalog.all
-                          .firstWhere(
-                            (reward) =>
-                                reward.id ==
-                                widget.rewardId[_dynamicRewardIndex],
-                          )
-                          .text,
-                      borderColor: RewardCatalog.all
-                          .firstWhere(
-                            (reward) =>
-                                reward.id ==
-                                widget.rewardId[_dynamicRewardIndex],
-                          )
-                          .rarity
-                          .borderColor,
-                          fillColor: RewardCatalog.all
-                          .firstWhere(
-                            (reward) =>
-                                reward.id ==
-                                widget.rewardId[_dynamicRewardIndex],
-                          )
-                          .rarity
-                          .fillColor,
-                      screenDiagonal: screenDiagonal,
-                      width: width,
-                      height: height,
+                      child: RedeemChallengeElement(
+                        rewardText: reward.text,
+                        borderColor: reward.rarity.borderColor,
+                        fillColor: reward.rarity.fillColor,
+                        screenDiagonal: screenDiagonal,
+                        width: width,
+                        height: height,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            footer,
-          ],
-        );
+              footer,
+            ],
+          );
+        }
         break;
 
       case _Phase.listing:
@@ -226,40 +249,12 @@ class _GachaRevealState extends State<GachaReveal>
                   return Stack(
                     children: [
                       for (int i = 0; i < widget.rewardId.length; i++)
-                        AnimatedBuilder(
-                          animation: _slideCurves[i],
-                          builder: (context, child) {
-                            final top = Tween<double>(
-                              begin: -width * 2,
-                              end: topOffset,
-                            ).transform(_slideCurves[i].value);
-
-                            return Positioned(
-                              top: top,
-                              left: _targetLeftFor(i, height),
-                              child: child!,
-                            );
-                          },
-                          child: RedeemChallengeElement(
-                            rewardText: RewardCatalog.all
-                                .firstWhere(
-                                  (reward) => reward.id == widget.rewardId[i],
-                                )
-                                .text,
-                                borderColor: RewardCatalog.all
-                                .firstWhere(
-                                  (reward) => reward.id == widget.rewardId[i],
-                                )
-                                .rarity.borderColor,
-                                fillColor: RewardCatalog.all
-                                .firstWhere(
-                                  (reward) => reward.id == widget.rewardId[i],
-                                )
-                                .rarity.fillColor,
-                            screenDiagonal: screenDiagonal,
-                            width: width,
-                            height: height,
-                          ),
+                        _buildRewardItem(
+                          i,
+                          width,
+                          height,
+                          topOffset,
+                          screenDiagonal,
                         ),
                     ],
                   );
