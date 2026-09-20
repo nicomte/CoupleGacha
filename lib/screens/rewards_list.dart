@@ -78,6 +78,9 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
             flex: 5,
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
+
+                final activePlayerRewardIds = rewardsOfActivePlayer.keys.toList();
+                final activePlayerRewardAmounts = rewardsOfActivePlayer.values.toList();
                 return GridView(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -87,8 +90,8 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
                     index,
                   ) {
                     return buildRewardCell(
-                      rewardsOfActivePlayer.keys.toList()[index],
-                      rewardsOfActivePlayer.values.toList()[index],
+                      activePlayerRewardIds[index],
+                      activePlayerRewardAmounts[index],
                       screenDiagonal,
                       columnWidth,
                       constraints.maxHeight / 7,
