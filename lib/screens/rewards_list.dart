@@ -63,7 +63,7 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
 
       case NavInput.up:
 
-        if (_highlightedElementIndex == 0) return;
+        if (_highlightedElementIndex <= 1) return;
 
         setState(() {
           _highlightedElementIndex -= 2;
@@ -78,7 +78,7 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
 
       case NavInput.down:
 
-        if (_rewardsOfActivePlayer.length - 1 == _highlightedElementIndex) return;
+        if (_highlightedElementIndex >= _rewardsOfActivePlayer.length - 2) return;
 
         setState(() {
           _highlightedElementIndex += 2;
