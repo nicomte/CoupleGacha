@@ -8,6 +8,7 @@ import 'package:couple_gacha/storage/player_rewards.dart';
 import 'package:couple_gacha/storage/rewards.dart';
 import 'package:couple_gacha/widgets/rewards/redeem_challenge_element.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class RewardsList extends StatefulWidget {
@@ -18,17 +19,61 @@ class RewardsList extends StatefulWidget {
 }
 
 class _RewardsListState extends State<RewardsList> with RouteAware {
+
   StreamSubscription<NavInput>? _subscription;
   bool _acceptsInput = true;
 
-  void _inputProcessor(NavInput event) {}
+  final int _rowCountToShow = 5;
+  late double _rowHeight;
+
+  late final ScrollController _scrollController;
+
+  void _scrollOneRow(double distance){
+    double endPosition = clampDouble(_scrollController.offset + distance, 0, _scrollController.position.maxScrollExtent) ;
+    _scrollController.animateTo(endPosition, duration: Duration(milliseconds: 100), curve: Curves.linear);
+  }
+
+  void _inputProcessor(NavInput event) {
+
+    if (!_acceptsInput) return;
+    if (!_scrollController.hasClients) return;
+
+    switch(event) {
+      case NavInput.up:
+        _scrollOneRow(-_rowHeight);
+        break;
+      case NavInput.down:
+        _scrollOneRow(_rowHeight);
+        break;
+      case NavInput.left:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NavInput.right:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NavInput.select:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case NavInput.back:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+    }
+  }
+
+  @override
+  void initState() {
+    _scrollController = ScrollController();
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
+
     routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
@@ -40,8 +85,13 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
 
   @override
   void dispose() {
+
     if (_subscription != null) _subscription!.cancel();
+
     routeObserver.unsubscribe(this);
+
+    _scrollController.dispose();
+
     super.dispose();
   }
 
@@ -79,12 +129,16 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
 
+                _rowHeight = constraints.maxHeight / _rowCountToShow;
+
                 final activePlayerRewardIds = rewardsOfActivePlayer.keys.toList();
                 final activePlayerRewardAmounts = rewardsOfActivePlayer.values.toList();
+                
                 return GridView(
+                  controller: _scrollController,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    mainAxisExtent: constraints.maxHeight / 5,
+                    mainAxisExtent: _rowHeight,
                   ),
                   children: List.generate(rewardsOfActivePlayer.length, (
                     index,
