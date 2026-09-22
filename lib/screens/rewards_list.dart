@@ -19,38 +19,115 @@ class RewardsList extends StatefulWidget {
 }
 
 class _RewardsListState extends State<RewardsList> with RouteAware {
-
   StreamSubscription<NavInput>? _subscription;
   bool _acceptsInput = true;
+
+  int _highlightedElementIndex = 0;
+  int _topRow = 1;
+  int _bottomRow = 5;
+  int _activeRow = 1;
 
   final int _rowCountToShow = 5;
   late double _rowHeight;
 
+  final _rewardsOfActivePlayer = playerRewards[100] ?? <int, int>{};
+
   late final ScrollController _scrollController;
 
-  void _scrollOneRow(double distance){
-    double endPosition = clampDouble(_scrollController.offset + distance, 0, _scrollController.position.maxScrollExtent) ;
-    _scrollController.animateTo(endPosition, duration: Duration(milliseconds: 100), curve: Curves.linear);
+  void _scrollOneRow(double distance, ScrollDirection direction) {
+    double endPosition = clampDouble(
+      _scrollController.offset + distance,
+      0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      endPosition,
+      duration: Duration(milliseconds: 100),
+      curve: Curves.linear,
+    );
+
+    if (direction == ScrollDirection.down) {
+      _topRow--;
+      _bottomRow--;
+    } else {
+      _topRow++;
+      _bottomRow++;
+    }
   }
 
   void _inputProcessor(NavInput event) {
-
     if (!_acceptsInput) return;
     if (!_scrollController.hasClients) return;
 
-    switch(event) {
+    switch (event) {
+
       case NavInput.up:
-        _scrollOneRow(-_rowHeight);
+
+        if (_highlightedElementIndex == 0) return;
+
+        setState(() {
+          _highlightedElementIndex -= 2;
+        });
+        _activeRow--;
+
+        if (_topRow != 1 && _activeRow == _topRow) {
+          _scrollOneRow(-_rowHeight, ScrollDirection.down);
+        }
+
         break;
+
       case NavInput.down:
-        _scrollOneRow(_rowHeight);
+
+        if (_rewardsOfActivePlayer.length - 1 == _highlightedElementIndex) return;
+
+        setState(() {
+          _highlightedElementIndex += 2;
+        });
+
+        _activeRow++;
+
+        if (_scrollController.position.maxScrollExtent !=
+                _scrollController.offset &&
+            _bottomRow == _activeRow) {
+          _scrollOneRow(_rowHeight, ScrollDirection.up);
+        }
+
         break;
+
       case NavInput.left:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+
+        if (_highlightedElementIndex == 0) return;
+
+        if (_highlightedElementIndex % 2 == 0) _activeRow--;
+
+        setState(() {
+          _highlightedElementIndex -= 1;
+        });
+
+        if (_topRow != 1 && _activeRow == _topRow) {
+          _scrollOneRow(-_rowHeight, ScrollDirection.down);
+        }
+
+        break;
+
       case NavInput.right:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+
+        if (_rewardsOfActivePlayer.length - 1 == _highlightedElementIndex) return;
+
+        if (_highlightedElementIndex != 0 && _highlightedElementIndex % 2 != 0) _activeRow++;
+
+        setState(() {
+          _highlightedElementIndex += 1;
+        });
+
+        if (_scrollController.position.maxScrollExtent !=
+                _scrollController.offset &&
+            _bottomRow == _activeRow) {
+          _scrollOneRow(_rowHeight, ScrollDirection.up);
+        }
+
+        break;
+
       case NavInput.select:
         // TODO: Handle this case.
         throw UnimplementedError();
@@ -58,6 +135,8 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
         // TODO: Handle this case.
         throw UnimplementedError();
     }
+
+    print('ActiveRow: $_activeRow, TopRow: $_topRow, BottomRow: $_bottomRow');
   }
 
   @override
@@ -69,7 +148,7 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
@@ -85,7 +164,6 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
 
   @override
   void dispose() {
-
     if (_subscription != null) _subscription!.cancel();
 
     routeObserver.unsubscribe(this);
@@ -104,8 +182,6 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
     final columnWidth = screenSize.width / 2;
 
     final fontScalingFactor = screenDiagonal * 0.001;
-
-    final rewardsOfActivePlayer = playerRewards[100] ?? <int, int>{};
 
     return Scaffold(
       body: Column(
@@ -128,22 +204,24 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
             flex: 5,
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
-
                 _rowHeight = constraints.maxHeight / _rowCountToShow;
 
-                final activePlayerRewardIds = rewardsOfActivePlayer.keys.toList();
-                final activePlayerRewardAmounts = rewardsOfActivePlayer.values.toList();
-                
+                final activePlayerRewardIds = _rewardsOfActivePlayer.keys
+                    .toList();
+                final activePlayerRewardAmounts = _rewardsOfActivePlayer.values
+                    .toList();
+
                 return GridView(
                   controller: _scrollController,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisExtent: _rowHeight,
                   ),
-                  children: List.generate(rewardsOfActivePlayer.length, (
+                  children: List.generate(_rewardsOfActivePlayer.length, (
                     index,
                   ) {
                     return buildRewardCell(
+                      index,
                       activePlayerRewardIds[index],
                       activePlayerRewardAmounts[index],
                       screenDiagonal,
@@ -161,11 +239,12 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
   }
 
   Widget buildRewardCell(
+    int index,
     int rewardId,
     int rewardAmount,
     double screenDiagonal,
     double width,
-    double height,
+    double height
   ) {
     Reward rewardData = RewardCatalog.getById(rewardId);
 
@@ -174,7 +253,7 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
       child: Row(
         children: [
           outlinedText(
-            '${rewardAmount}x',
+            '${rewardAmount}x ',
             fontSize:
                 Theme.of(context).textTheme.bodyMedium!.fontSize! *
                 screenDiagonal *
@@ -189,7 +268,7 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
               screenDiagonal: screenDiagonal,
               width: width,
               height: height,
-              borderColor: rewardData.rarity.borderColor,
+              borderColor: index == _highlightedElementIndex ? Colors.white : rewardData.rarity.borderColor,
               fillColor: rewardData.rarity.fillColor,
               rotate: false,
             ),
@@ -199,3 +278,6 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
     );
   }
 }
+
+// What direction the screen moves towards
+enum ScrollDirection { up, down }
