@@ -6,6 +6,7 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/screens/redeem_points.dart';
+import 'package:couple_gacha/screens/rewards_list.dart';
 import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/storage/active_challenges.dart';
@@ -215,7 +216,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
       case AuthSuccess(:final userId):
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => RedeemPoints(activePlayerId: userId),
+            builder: (context) => RewardsList(activePlayerId: userId),
           ),
         );
       case AuthCancelled():

@@ -209,9 +209,11 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
           }
         }
 
+        break;
+
       case NavInput.back:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        Navigator.of(context).pop();
+        break;
     }
   }
 
