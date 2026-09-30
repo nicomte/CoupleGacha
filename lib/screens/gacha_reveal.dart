@@ -5,7 +5,7 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/storage/rewards.dart';
-import 'package:couple_gacha/widgets/rewards/redeem_challenge_element.dart';
+import 'package:couple_gacha/widgets/rewards/reward_element.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:flutter/material.dart';
 
@@ -168,7 +168,7 @@ class _GachaRevealState extends State<GachaReveal>
           child: child!,
         );
       },
-      child: RedeemChallengeElement(
+      child: RewardElement(
         rewardText: reward.text,
         borderColor: reward.rarity.borderColor,
         fillColor: reward.rarity.fillColor,
@@ -216,7 +216,7 @@ class _GachaRevealState extends State<GachaReveal>
                           child: child,
                         ),
                       ),
-                      child: RedeemChallengeElement(
+                      child: RewardElement(
                         rewardText: reward.text,
                         borderColor: reward.rarity.borderColor,
                         fillColor: reward.rarity.fillColor,

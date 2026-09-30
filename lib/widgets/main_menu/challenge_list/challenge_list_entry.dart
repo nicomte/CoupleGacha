@@ -1,6 +1,6 @@
 // challenges_list_entry.dart
 import 'package:couple_gacha/widgets/main_menu/challenge_list/redeem_challenge_button.dart';
-import 'package:couple_gacha/widgets/main_menu/challenge_list/scrolling_area.dart';
+import 'package:couple_gacha/widgets/util/scrolling_area.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 

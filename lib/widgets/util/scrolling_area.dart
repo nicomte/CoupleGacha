@@ -8,6 +8,7 @@ class ScrollingArea extends StatefulWidget {
     required this.textStyle,
     this.pixelsPerSecond = 50,
     this.gap,
+    this.scrolling = true,
   });
 
   final String entryText;
@@ -20,6 +21,7 @@ class ScrollingArea extends StatefulWidget {
   /// roughly half the font size if left unset — override for an exact
   /// gap regardless of text size.
   final double? gap;
+  final bool scrolling;
 
   @override
   State<ScrollingArea> createState() => _ScrollingAreaState();
@@ -49,6 +51,18 @@ class _ScrollingAreaState extends State<ScrollingArea>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(ScrollingArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scrolling != widget.scrolling) {
+      if (!widget.scrolling) {
+        _controller.stop();
+        _controller.value = 0; // next time it starts from the beginning
+      }
+      _measuredForWidth = null; // force a re-measure so repeat() restarts
+    }
   }
 
   void _remeasureIfNeeded(double maxWidth, double fontSize) {
@@ -93,7 +107,7 @@ class _ScrollingAreaState extends State<ScrollingArea>
     // This does NOT run every frame — only when the measured inputs
     // above actually changed.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || !widget.scrolling) return;
       if (!needsScrolling) {
         _controller.stop();
         return;
@@ -112,6 +126,34 @@ class _ScrollingAreaState extends State<ScrollingArea>
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
         final fontSize = constraints.maxHeight * 0.5;
+
+        if (!widget.scrolling) {
+          return ClipRect(
+            child: SizedBox(
+              width: maxWidth,
+              height: constraints.maxHeight,
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                alignment: Alignment.centerLeft,
+                // Same wrapper as the scrolling strip: the Row centers the
+                // text vertically, which a bare Stack would not.
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    outlinedText(
+                      widget.entryText,
+                      fontSize: fontSize,
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                      textColor: widget.textStyle.color!,
+                      fontFamily: widget.textStyle.fontFamily!,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        
         _remeasureIfNeeded(maxWidth, fontSize);
 
         if (_tileWidth <= 0) {

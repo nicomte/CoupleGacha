@@ -1,7 +1,7 @@
-import 'package:couple_gacha/widgets/main_menu/challenge_list/scrolling_area.dart';
+import 'package:couple_gacha/widgets/util/scrolling_area.dart';
 import 'package:flutter/material.dart';
 
-class RedeemChallengeElement extends StatefulWidget {
+class RewardElement extends StatefulWidget {
   final String rewardText;
   final double screenDiagonal;
   final double width;
@@ -9,8 +9,9 @@ class RedeemChallengeElement extends StatefulWidget {
   final Color borderColor;
   final Color fillColor;
   final bool rotate;
+  final bool scroll;
 
-  const RedeemChallengeElement({
+  const RewardElement({
     super.key,
     required this.rewardText,
     required this.screenDiagonal,
@@ -19,13 +20,14 @@ class RedeemChallengeElement extends StatefulWidget {
     required this.borderColor,
     required this.fillColor,
     this.rotate = true,
+    this.scroll = true,
   });
 
   @override
-  State<RedeemChallengeElement> createState() => _RedeemChallengeElementState();
+  State<RewardElement> createState() => _RewardElementState();
 }
 
-class _RedeemChallengeElementState extends State<RedeemChallengeElement> {
+class _RewardElementState extends State<RewardElement> {
   @override
   Widget build(BuildContext context) {
     final fontScalingFactor = widget.screenDiagonal * 0.001;
@@ -56,18 +58,19 @@ class _RedeemChallengeElementState extends State<RedeemChallengeElement> {
           child: Padding(
             padding: EdgeInsetsGeometry.symmetric(horizontal: 10),
             child: ScrollingArea(
-              entryText: widget.rewardText,
-              textStyle: TextStyle(
-                fontSize:
-                    Theme.of(context).textTheme.labelMedium!.fontSize! *
-                    fontScalingFactor,
-                backgroundColor: Theme.of(context).colorScheme.tertiary,
-                color: Theme.of(context).textTheme.labelMedium!.color!,
-                fontFamily: Theme.of(
-                  context,
-                ).textTheme.labelMedium!.fontFamily!,
-              ),
-            ),
+                    entryText: widget.rewardText,
+                    textStyle: TextStyle(
+                      fontSize:
+                          Theme.of(context).textTheme.labelMedium!.fontSize! *
+                          fontScalingFactor,
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                      color: Theme.of(context).textTheme.labelMedium!.color!,
+                      fontFamily: Theme.of(
+                        context,
+                      ).textTheme.labelMedium!.fontFamily!,
+                    ),
+                    scrolling: widget.scroll
+                  )
           ),
         ),
       ),
