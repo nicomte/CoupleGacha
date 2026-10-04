@@ -17,7 +17,6 @@ import 'sensor_isolate_worker.dart';
 /// in widget code / `setState` — none of it blocks the UI thread, no
 /// matter how long the sensor takes to respond.
 
-
 class SensorService {
   Isolate? _isolate;
   SendPort? _workerPort;
@@ -41,7 +40,6 @@ class SensorService {
     // First message from the worker is always its SendPort.
     _workerPort = await broadcast.first as SendPort;
 
-
     _subscription = broadcast.listen((message) {
       final response = message as SensorResponse;
       final completer = _pending.remove(response.requestId);
@@ -53,9 +51,7 @@ class SensorService {
       }
     });
 
-    final result = await _send<bool>(
-      BeginCmd(_id(), baud: baud, port: port)
-    );
+    final result = await _send<bool>(BeginCmd(_id(), baud: baud, port: port));
 
     _initialized = result;
 
@@ -86,8 +82,7 @@ class SensorService {
     int timeout,
     PermissionLevel permission,
     ScanNr scanNr,
-  ) =>
-      _send(AddFingerprintCmd(_id(), userId, timeout, permission, scanNr));
+  ) => _send(AddFingerprintCmd(_id(), userId, timeout, permission, scanNr));
 
   /// Waits up to [timeout] ms for a finger on the sensor. This is the
   /// call `_authenticateFinger` uses — safe to `await` directly, the UI
