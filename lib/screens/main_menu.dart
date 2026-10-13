@@ -9,6 +9,7 @@ import 'package:couple_gacha/screens/redeem_points.dart';
 import 'package:couple_gacha/screens/rewards_list.dart';
 import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
+import 'package:couple_gacha/screens/user_settings.dart';
 import 'package:couple_gacha/storage/active_challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/confirm_challenge_success.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
@@ -229,7 +230,11 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   }
 
   void _openPlayerSettings() {
-    // TODO: Navigate to player settings.
+    Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => UserSettings(),
+          ),
+        );
   }
 
   Future<void> _openRedeemPoints() async {

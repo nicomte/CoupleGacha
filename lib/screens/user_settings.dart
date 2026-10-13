@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:couple_gacha/fingerprint_scanner_isolate/sensor_service.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
+import 'package:couple_gacha/storage/player_rewards.dart';
 import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/widgets/user_settings/fingerprint_enrollment_dialog.dart';
 import 'package:couple_gacha/widgets/user_settings/user_element.dart';
+import 'package:couple_gacha/widgets/user_settings/user_name_input_widget.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
-
+import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:flutter/material.dart';
 
 class UserSettings extends StatefulWidget {
@@ -20,26 +22,28 @@ class UserSettings extends StatefulWidget {
 }
 
 class _UserSettingsState extends State<UserSettings> with RouteAware {
-  StreamSubscription<NavInput>? _subscription;
-  //late final SensorService _sensorService;
+  static const int _maxPlayers = 2;
 
+  StreamSubscription<NavInput>? _subscription;
   bool _acceptsInput = true;
 
-  @override
-  void initState() {
-    //_sensorService = SensorService();
-    //_sensorService.init();
-
-    super.initState();
-  }
+  /// True while the add-player flow is running, so extra inputs are ignored.
+  bool _busy = false;
 
   @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
     routeObserver.subscribe(this, ModalRoute.of(context)!);
-    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    routeObserver.unsubscribe(this);
+    super.dispose();
   }
 
   @override
@@ -48,43 +52,56 @@ class _UserSettingsState extends State<UserSettings> with RouteAware {
   @override
   void didPopNext() => setState(() => _acceptsInput = true);
 
-  @override
-  void dispose() {
-    if (_subscription != null) {
-      _subscription!.cancel();
-    }
-    routeObserver.unsubscribe(this);
-    //_sensorService.dispose();
-    super.dispose();
-  }
-
   Future<void> _inputProcessor(NavInput input) async {
-    if (!_acceptsInput) return;
+    if (!_acceptsInput || _busy) return;
 
     switch (input) {
       case NavInput.back:
         Navigator.of(context).pop();
-        break;
+      case NavInput.select:
+        await _addPlayer();
       case NavInput.up:
       case NavInput.down:
-        // Nothing to do
-        break;
       case NavInput.left:
-        break;
       case NavInput.right:
-        break;
-      case NavInput.select:
         break;
     }
   }
 
+  Future<void> _addPlayer() async {
+  if (playerStore.players.length >= _maxPlayers) return;
+
+  _busy = true;
+  try {
+    final userName = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const UserNameInputWidget()),
+    );
+    final trimmedName = userName?.trim() ?? '';
+    if (trimmedName.isEmpty || !mounted) return;
+
+    final userId = await FingerprintEnrollmentDialog.open(
+      context,
+      dialogText: 'Enroll new finger',
+    );
+
+    // null = failed or cancelled; the dialog already told the user why.
+    if (userId == null || !mounted) return;
+
+    playerStore.addPlayer(Player(playerId: userId, playerName: trimmedName));
+    playerRewards[userId] = {};
+    setState(() {});
+  } finally {
+    _busy = false;
+  }
+}
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenDiagonal = sqrt(
-      pow(MediaQuery.of(context).size.height, 2) +
-          pow(MediaQuery.of(context).size.width, 2),
-    );
+    final size = MediaQuery.of(context).size;
+    final screenDiagonal = sqrt(size.width * size.width + size.height * size.height);
+    final theme = Theme.of(context);
+    final bodyStyle = theme.textTheme.bodyMedium!;
+    final canAddPlayer = playerStore.players.length < _maxPlayers;
 
     return Scaffold(
       body: Column(
@@ -94,35 +111,31 @@ class _UserSettingsState extends State<UserSettings> with RouteAware {
             child: outlinedText(
               'Registered Players:',
               fontSize: screenDiagonal * 0.08,
-              backgroundColor: Theme.of(context).colorScheme.tertiary,
-              textColor: Theme.of(context).textTheme.bodyMedium!.color!,
-              fontFamily: Theme.of(context).textTheme.bodyMedium!.fontFamily!,
+              backgroundColor: theme.colorScheme.tertiary,
+              textColor: bodyStyle.color!,
+              fontFamily: bodyStyle.fontFamily!,
             ),
           ),
-
           Expanded(
             flex: 3,
             child: Padding(
-              padding: EdgeInsetsGeometry.symmetric(
-                horizontal: screenDiagonal * 0.05,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: screenDiagonal * 0.05),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  for (Player p in playerStore.players)
+                  for (final player in playerStore.players)
                     UserElement(
-                      userName: p.playerName,
+                      userName: player.playerName,
                       screenDiagonal: screenDiagonal,
-                      screenWidth: screenWidth,
+                      screenWidth: size.width,
                     ),
                 ],
               ),
             ),
           ),
-
           Expanded(
             flex: 1,
-            child: playerStore.players.length < 2
+            child: canAddPlayer
                 ? SelectAndReturnInfo.twoOptions(
                     firstButtonAsset: 'assets/green_button.svg',
                     firstActionText: 'to add player',

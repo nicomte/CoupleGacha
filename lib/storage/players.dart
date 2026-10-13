@@ -5,11 +5,7 @@ class Player {
   final String playerName;
   int points;
 
-  Player({
-    required this.playerId,
-    required this.playerName,
-    this.points = 0,
-  });
+  Player({required this.playerId, required this.playerName, this.points = 0});
 }
 
 class PlayerStore extends ChangeNotifier {
@@ -37,9 +33,11 @@ class PlayerStore extends ChangeNotifier {
     _findPlayer(playerId).points -= amount;
     notifyListeners();
   }
+
+  void addPlayer(Player player) {
+    _players.add(player);
+    notifyListeners();
+  }
 }
 
-final playerStore = PlayerStore([
-  Player(playerId: 8, playerName: 'Nico', points: 10),
-  Player(playerId: 100, playerName: 'Monique', points: 10),
-]);
+final playerStore = PlayerStore([]);
