@@ -5,6 +5,7 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 
@@ -34,6 +35,9 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
   static const String _backspaceKey = 'DEL';
   static const String _confirmKey = 'OK';
 
+  // ValueNotifiers to minimize rebuilds
+  late final List<ValueNotifier<bool>> _highlightNotifiers;
+
   // A-Z, then backspace, then confirm
   static final List<String> _keys = [
     for (int c = 'A'.codeUnitAt(0); c <= 'Z'.codeUnitAt(0); c++)
@@ -52,6 +56,17 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
   int get _rows => (_keys.length / _columns).ceil();
 
   // ------------------------------------------------------------- lifecycle
+
+  @override
+  void initState() {
+    super.initState();
+
+    _highlightNotifiers = List.generate(
+      _keys.length,
+      ((index) => ValueNotifier<bool>(index == 0)),
+    );
+  }
+
   @override
   void didChangeDependencies() {
     _subscription ??= InputSourceProvider.of(
@@ -71,6 +86,11 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
   void dispose() {
     _subscription?.cancel();
     routeObserver.unsubscribe(this);
+
+    for (final notifier in _highlightNotifiers) {
+      notifier.dispose();
+    }
+
     super.dispose();
   }
 
@@ -104,7 +124,7 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
   void _moveHorizontal(int delta) {
     final next = _highlightedIndex + delta;
     if (next < 0 || next >= _keys.length) return;
-    setState(() => _highlightedIndex = next);
+    _setHighlightedElement(next);
   }
 
   /// Up/down jumps one row. Stops at the top/bottom row.
@@ -116,7 +136,7 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
 
     int next = _highlightedIndex + deltaRows * _columns;
     if (next >= _keys.length) next = _keys.length - 1;
-    setState(() => _highlightedIndex = next);
+    _setHighlightedElement(next);
   }
 
   // -------------------------------------------------------- business logic
@@ -135,6 +155,21 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
       default:
         if (_name.length >= _maxNameLength) return;
         setState(() => _name += key);
+    }
+  }
+
+  // Only flips two ValueNotifiers. No setState().
+  void _setHighlightedElement(int newIndex) {
+    if (newIndex == _highlightedIndex) return;
+
+    final old = _highlightedIndex;
+    _highlightedIndex = newIndex;
+
+    if (old >= 0 && old < _highlightNotifiers.length) {
+      _highlightNotifiers[old].value = false;
+    }
+    if (newIndex >= 0 && newIndex < _highlightNotifiers.length) {
+      _highlightNotifiers[newIndex].value = true;
     }
   }
 
@@ -184,8 +219,7 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
                         (constraints.maxWidth - spacing * (_columns - 1)) /
                         _columns;
                     final cellHeight =
-                        (constraints.maxHeight - spacing * (_rows - 1)) /
-                        _rows;
+                        (constraints.maxHeight - spacing * (_rows - 1)) / _rows;
 
                     return GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -196,46 +230,15 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
                         crossAxisSpacing: spacing,
                         childAspectRatio: cellWidth / cellHeight,
                       ),
-                      itemBuilder: (context, index) {
-                        final key = _keys[index];
-                        final isHighlighted = index == _highlightedIndex;
-
-                        // Special keys get their own fill color
-                        Color fill = theme.colorScheme.secondary;
-                        if (key == _confirmKey) {
-                          fill = theme.colorScheme.primaryContainer;
-                        } else if (key == _backspaceKey) {
-                          fill = theme.colorScheme.primary;
-                        }
-
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: fill,
-                            borderRadius: BorderRadius.circular(
-                              screenDiagonal * 0.008,
-                            ),
-                            border: Border.all(
-                              color: isHighlighted
-                                  ? Colors.white
-                                  : theme.colorScheme.primary,
-                              width: isHighlighted
-                                  ? screenDiagonal * 0.006
-                                  : screenDiagonal * 0.002,
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: outlinedText(
-                              key,
-                              fontSize: screenDiagonal * _keyFontFactor,
-                              backgroundColor: Theme.of(context).colorScheme.tertiary,
-                              textColor: textColor,
-                              fontFamily: fontFamily,
-                            ),
-                          ),
-                        );
-                      },
+                      itemBuilder: (context, index) => _KeyCell(
+                        characterKey: _keys[index],
+                        highlightNotifier: _highlightNotifiers[index],
+                        screenDiagonal: screenDiagonal,
+                        theme: theme,
+                        keyFontFactor: _keyFontFactor,
+                        confirmKey: _confirmKey,
+                        backspaceKey: _backspaceKey,
+                      ),
                     );
                   },
                 ),
@@ -244,6 +247,69 @@ class _UserNameInputWidgetState extends State<UserNameInputWidget>
           ],
         ),
       ),
+    );
+  }
+}
+
+class _KeyCell extends StatelessWidget {
+  final String characterKey;
+  final ValueListenable<bool> highlightNotifier;
+  final double screenDiagonal;
+  final ThemeData theme;
+  final double keyFontFactor;
+  final String confirmKey;
+  final String backspaceKey;
+
+  const _KeyCell({
+    required this.characterKey,
+    required this.highlightNotifier,
+    required this.screenDiagonal,
+    required this.theme,
+    required this.keyFontFactor,
+    required this.confirmKey,
+    required this.backspaceKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Special keys get their own fill color
+    Color fill = theme.colorScheme.secondary;
+    if (characterKey == confirmKey) {
+      fill = theme.colorScheme.primaryContainer;
+    } else if (characterKey == backspaceKey) {
+      fill = theme.colorScheme.primary;
+    }
+
+    final label = FittedBox(
+      fit: BoxFit.scaleDown,
+      child: outlinedText(
+        characterKey,
+        fontSize: screenDiagonal * keyFontFactor,
+        backgroundColor: theme.colorScheme.tertiary,
+        textColor: theme.textTheme.bodyMedium!.color!, // match the original
+        fontFamily: theme.textTheme.bodyMedium!.fontFamily!,
+      ),
+    );
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: highlightNotifier,
+      child: label,
+      builder: (context, isHighlighted, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(screenDiagonal * 0.008),
+            border: Border.all(
+              color: isHighlighted ? Colors.white : theme.colorScheme.primary,
+              width: isHighlighted
+                  ? screenDiagonal * 0.006
+                  : screenDiagonal * 0.002,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: child,
+        );
+      },
     );
   }
 }

@@ -11,7 +11,6 @@ import 'package:couple_gacha/widgets/user_settings/user_element.dart';
 import 'package:couple_gacha/widgets/user_settings/user_name_input_widget.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
-import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:flutter/material.dart';
 
 class UserSettings extends StatefulWidget {
