@@ -80,7 +80,7 @@ class _UserSettingsState extends State<UserSettings> with RouteAware {
 
     final userId = await FingerprintEnrollmentDialog.open(
       context,
-      dialogText: 'Enroll new finger',
+      dialogText: 'Press finger firmly onto the sensor, cover it as much as possible and don\'t move'
     );
 
     // null = failed or cancelled; the dialog already told the user why.

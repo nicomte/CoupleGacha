@@ -11,12 +11,14 @@ import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/screens/user_settings.dart';
 import 'package:couple_gacha/storage/active_challenges.dart';
+import 'package:couple_gacha/storage/players.dart';
 import 'package:couple_gacha/widgets/dialogs/confirm_challenge_success.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
 import 'package:couple_gacha/widgets/main_menu/points_overview.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu/assets_index.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu/rotating_menu.dart';
+import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:flutter/material.dart';
 
 class MainMenu extends StatefulWidget {
@@ -175,6 +177,10 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   void _selectRotatingMenuItem() {
     final menuItem = _activeRotatingMenuItem();
 
+    if (menuItem != MainMenuItem.playerSettings && playerStore.players.length < 2 ){
+      WarningPopup.show(context, 'Add at least two players first.', Duration(seconds: 5));
+    }
+
     switch (menuItem) {
       case MainMenuItem.checkRewards:
         _openCheckRewards();
@@ -195,6 +201,12 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   }
 
   Future<void> _redeemChallenge() async {
+
+    if (playerStore.players.length < 2 ){
+      WarningPopup.show(context, 'Add at least two players first.', Duration(seconds: 5));
+    }
+
+
     final activeChallenge = activeChallenges.entries.toList()[_activeChallenge];
     final challengeFinished = await ConfirmChallengeSuccess.open(context, activeChallenge.value, activeChallenge.key);
         if (challengeFinished!=null && challengeFinished) {
