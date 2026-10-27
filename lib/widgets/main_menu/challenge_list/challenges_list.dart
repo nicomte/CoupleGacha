@@ -1,6 +1,6 @@
-import 'package:couple_gacha/storage/active_challenges.dart';
-import 'package:couple_gacha/storage/challenges.dart';
-import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/persistence_logic/active_challenges.dart';
+import 'package:couple_gacha/persistence_logic/challenges.dart';
+import 'package:couple_gacha/persistence_logic/players.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenge_list_entry.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list_title.dart';
 import 'package:couple_gacha/domain/main_menu_enums.dart';

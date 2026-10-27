@@ -5,9 +5,9 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
 import 'package:couple_gacha/screens/gacha_reveal.dart';
-import 'package:couple_gacha/storage/player_rewards.dart';
-import 'package:couple_gacha/storage/players.dart';
-import 'package:couple_gacha/storage/rewards.dart';
+import 'package:couple_gacha/persistence_logic/player_rewards.dart';
+import 'package:couple_gacha/persistence_logic/players.dart';
+import 'package:couple_gacha/persistence_logic/rewards.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:couple_gacha/widgets/util/warning_popup.dart';
@@ -105,13 +105,8 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
 
           final List<int> rewards = RewardRoller.roll(_pointCost == 1 ? 1 : 10);
 
-          for (int rewardId in rewards){
-          playerRewards
-          .putIfAbsent(widget.activePlayerId, () => <int, int>{})
-          .update(rewardId, (count) => count + 1, ifAbsent: () => 1);
-          }
+          playerRewards.addRewards(widget.activePlayerId, rewards);
           
-
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => GachaReveal(activePlayerId: widget.activePlayerId, rewardId: rewards)));
         }
 

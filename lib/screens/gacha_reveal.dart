@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
-import 'package:couple_gacha/storage/rewards.dart';
+import 'package:couple_gacha/persistence_logic/rewards.dart';
 import 'package:couple_gacha/widgets/rewards/reward_element.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:flutter/material.dart';

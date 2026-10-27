@@ -10,8 +10,8 @@ import 'package:couple_gacha/screens/rewards_list.dart';
 import 'package:couple_gacha/screens/select_challenge.dart';
 import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/screens/user_settings.dart';
-import 'package:couple_gacha/storage/active_challenges.dart';
-import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/persistence_logic/active_challenges.dart';
+import 'package:couple_gacha/persistence_logic/players.dart';
 import 'package:couple_gacha/widgets/dialogs/confirm_challenge_success.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/main_menu/challenge_list/challenges_list.dart';
@@ -37,7 +37,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
     rotationDirection: RotationDirection.clockwise,
   );
 
-  int _activeChallenge = 0;
+  int _activeChallengeHighlighted = 0;
   ActiveMenu _activeMenu = ActiveMenu.rotatingMenu;
   double screenDiagonal = 0;
   bool _acceptsInput = true;
@@ -82,7 +82,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.counterClockwise);
           } else {
-            if (activeChallenges.length>1)  _activeChallenge = _toggleActiveChallenge();
+            if (activeChallenges.length>1)  _activeChallengeHighlighted = _toggleActiveChallenge();
           }
         });
         break;
@@ -92,13 +92,13 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.clockwise);
           } else {
-            if (activeChallenges.length>1)  _activeChallenge = _toggleActiveChallenge();
+            if (activeChallenges.length>1)  _activeChallengeHighlighted = _toggleActiveChallenge();
           }
         });
         break;
 
       case NavInput.left:
-        if (activeChallenges.isEmpty) {
+        if (activeChallenges.length == 0) {
           break;
         }
         setState(() {
@@ -107,7 +107,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
         break;
 
       case NavInput.right:
-        if (activeChallenges.isEmpty) {
+        if (activeChallenges.length == 0) {
           break;
         }
         setState(() {
@@ -142,7 +142,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   }
 
   int _toggleActiveChallenge() {
-    return _activeChallenge == 0 ? 1 : 0;
+    return _activeChallengeHighlighted == 0 ? 1 : 0;
   }
 
   /// Returns the menu item currently positioned to the right of the
@@ -179,6 +179,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
 
     if (menuItem != MainMenuItem.playerSettings && playerStore.players.length < 2 ){
       WarningPopup.show(context, 'Add at least two players first.', Duration(seconds: 5));
+      return;
     }
 
     switch (menuItem) {
@@ -204,15 +205,16 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
 
     if (playerStore.players.length < 2 ){
       WarningPopup.show(context, 'Add at least two players first.', Duration(seconds: 5));
+      return;
     }
 
 
-    final activeChallenge = activeChallenges.entries.toList()[_activeChallenge];
+    final activeChallenge = activeChallenges.entries.toList()[_activeChallengeHighlighted];
     final challengeFinished = await ConfirmChallengeSuccess.open(context, activeChallenge.value, activeChallenge.key);
         if (challengeFinished!=null && challengeFinished) {
           setState(() {
             _activeMenu = ActiveMenu.rotatingMenu;
-            _activeChallenge = 0;
+            _activeChallengeHighlighted = 0;
           });
         }  
   }
@@ -321,7 +323,7 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
 
           ChallengesList(
             screenSize: screenSize,
-            activeChallenge: _activeChallenge,
+            activeChallenge: _activeChallengeHighlighted,
             activeMenu: _activeMenu,
           ),
         ],

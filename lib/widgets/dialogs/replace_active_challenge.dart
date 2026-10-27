@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
-import 'package:couple_gacha/storage/challenges.dart';
+import 'package:couple_gacha/persistence_logic/challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';

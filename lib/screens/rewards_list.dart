@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
-import 'package:couple_gacha/storage/player_rewards.dart';
-import 'package:couple_gacha/storage/rewards.dart';
+import 'package:couple_gacha/persistence_logic/player_rewards.dart';
+import 'package:couple_gacha/persistence_logic/rewards.dart';
 import 'package:couple_gacha/widgets/dialogs/redeem_reward.dart';
 import 'package:couple_gacha/widgets/rewards/reward_element.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
@@ -54,7 +54,7 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _rewardsOfActivePlayer = playerRewards[widget.activePlayerId] ?? <int, int>{};
+    _rewardsOfActivePlayer = playerRewards.rewardsOf(widget.activePlayerId);
     _activePlayerRewardIds = _rewardsOfActivePlayer.keys.toList();
     _highlightNotifiers = List.generate(
       _activePlayerRewardIds.length,

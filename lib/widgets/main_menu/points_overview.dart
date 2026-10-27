@@ -1,4 +1,4 @@
-import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/persistence_logic/players.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:flutter/material.dart';
 

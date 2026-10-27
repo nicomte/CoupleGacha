@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
-import 'package:couple_gacha/storage/active_challenges.dart';
-import 'package:couple_gacha/storage/challenges.dart';
+import 'package:couple_gacha/persistence_logic/active_challenges.dart';
+import 'package:couple_gacha/persistence_logic/challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
 import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
@@ -79,7 +79,7 @@ class _RevealChallengeState extends State<RevealChallenge>
         // Nothing to do
         break;
       case NavInput.select:
-      activeChallenges[widget.activePlayerId] = widget.challenge.challengeId;
+      activeChallenges.add(widget.activePlayerId, widget.challenge.challengeId);
         Navigator.of(context).pop(true);
         break;
       case NavInput.back:

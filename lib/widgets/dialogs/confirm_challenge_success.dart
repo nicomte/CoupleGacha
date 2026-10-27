@@ -5,9 +5,9 @@ import 'package:couple_gacha/domain/auth_enums.dart';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
-import 'package:couple_gacha/storage/active_challenges.dart';
-import 'package:couple_gacha/storage/challenges.dart';
-import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/persistence_logic/active_challenges.dart';
+import 'package:couple_gacha/persistence_logic/challenges.dart';
+import 'package:couple_gacha/persistence_logic/players.dart';
 import 'package:couple_gacha/widgets/dialogs/fingerprint_auth_dialog.dart';
 import 'package:couple_gacha/widgets/dialogs/gacha_dialog.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
@@ -80,7 +80,7 @@ class _ConfirmChallengeSuccessState extends State<ConfirmChallengeSuccess>
   }
 
   void _updateActiveChallenge() {
-    activeChallenges.remove(activeChallenges.entries.toList().firstWhere((c)=> c.value == widget.activeChallengeId).key);
+    activeChallenges.removeByChallenge(widget.activeChallengeId);
   }
 
   Future<void> _inputProcessor(NavInput input) async {

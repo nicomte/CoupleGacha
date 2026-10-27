@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
-import 'package:couple_gacha/storage/active_challenges.dart';
-import 'package:couple_gacha/storage/challenges.dart';
+import 'package:couple_gacha/persistence_logic/active_challenges.dart';
+import 'package:couple_gacha/persistence_logic/challenges.dart';
 import 'package:couple_gacha/widgets/dialogs/replace_active_challenge.dart';
 import 'package:couple_gacha/widgets/dialogs/reveal_challenge.dart';
 import 'package:couple_gacha/widgets/select_challenge/challenge_element.dart';
@@ -75,10 +75,10 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
 }
 
 Future<void> _handleSelect() async {
-  if (activeChallenges.containsKey(widget.activePlayerId)) {
+  if (activeChallenges.hasActiveChallenge(widget.activePlayerId)) {
     final result = await ReplaceActiveChallenge.open(
       context,
-      activeChallenges[widget.activePlayerId]!
+      activeChallenges.challengeOf(widget.activePlayerId)!
     );
     if (result != true) return;
     if (!mounted) return;

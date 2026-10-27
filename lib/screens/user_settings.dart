@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:couple_gacha/navigation/input_source_provider.dart';
 import 'package:couple_gacha/route_observer.dart';
-import 'package:couple_gacha/storage/player_rewards.dart';
-import 'package:couple_gacha/storage/players.dart';
+import 'package:couple_gacha/persistence_logic/player_rewards.dart';
+import 'package:couple_gacha/persistence_logic/players.dart';
 import 'package:couple_gacha/widgets/user_settings/fingerprint_enrollment_dialog.dart';
 import 'package:couple_gacha/widgets/user_settings/user_element.dart';
 import 'package:couple_gacha/widgets/user_settings/user_name_input_widget.dart';
@@ -87,7 +87,7 @@ class _UserSettingsState extends State<UserSettings> with RouteAware {
     if (userId == null || !mounted) return;
 
     playerStore.addPlayer(Player(playerId: userId, playerName: trimmedName));
-    playerRewards[userId] = {};
+    playerRewards.createPlayer(userId);
     setState(() {});
   } finally {
     _busy = false;
