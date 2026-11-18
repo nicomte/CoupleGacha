@@ -76,70 +76,66 @@ class _ConfirmChallengeSuccessState extends State<ConfirmChallengeSuccess>
   }
 
   void _awardPoints() {
-    playerStore.addPoints(widget.activeChallengeId, challenges.firstWhere((c) => c.challengeId == widget.activeChallengeId).challengePoints);
+    playerStore.addPoints(widget.activePlayerId, challenges.firstWhere((c) => c.challengeId == widget.activeChallengeId).challengePoints);
   }
 
-  void _updateActiveChallenge() {
-    activeChallenges.removeByChallenge(widget.activeChallengeId);
+  void _completeActiveChallenge() {
+    activeChallenges.removeByPlayer(widget.activePlayerId);
   }
 
-  Future<void> _inputProcessor(NavInput input) async {
-    if (!_acceptsInput) return;
-    switch (input) {
-      case NavInput.up:
-        // Nothing to do
-        break;
-      case NavInput.down:
-        // Nothing to do
-        break;
-      case NavInput.left:
-        // Nothing to do
-        break;
-      case NavInput.right:
-        // Nothing to do
-        break;
-      case NavInput.select:
-        final result = await FingerprintAuthDialog.open(context, dialogText: 'Put partners finger on sensor to confirm.');
+Future<void> _inputProcessor(NavInput input) async {
+  if (!_acceptsInput) return;
 
-        switch (result) {
-          case null:
-            // Nothing to do
-            break;
+  switch (input) {
+    case NavInput.up:
+    case NavInput.down:
+    case NavInput.left:
+    case NavInput.right:
+      break; // Nothing to do
 
-          case AuthSuccess(:final userId):
-            if (userId == widget.activePlayerId) {
-              if (!mounted) return;
-              WarningPopup.show(
-                context,
-                'This was the wrong persons finger.',
-                Duration(seconds: 3),
-              );
-              break;
-            } else {
-              _awardPoints();
-              _updateActiveChallenge();
+    case NavInput.select:
+      await _confirmWithPartner();
+      break;
 
-              await Future.delayed(const Duration(seconds: 1));
-
-              if (!mounted) return;
-              Navigator.of(context).pop(true);
-              return;
-            }
-
-          case AuthCancelled():
-            // Nothing to do
-            break;
-
-          case AuthFailed():
-            // Nothing to do
-            break;
-        }
-
-      case NavInput.back:
-        Navigator.of(context).pop(false);
-        break;
-    }
+    case NavInput.back:
+      Navigator.of(context).pop(false);
+      break;
   }
+}
+
+/// The partner confirms with their fingerprint. Points go to the assigned
+/// player; the confirmer's id is only used to check it is NOT that player.
+Future<void> _confirmWithPartner() async {
+  final result = await FingerprintAuthDialog.open(
+    context,
+    dialogText: 'Put partners finger on sensor to confirm.',
+  );
+  if (!mounted) return;
+
+  switch (result) {
+    case AuthSuccess(:final userId):
+      if (userId == widget.activePlayerId) {
+        WarningPopup.show(
+          context,
+          'This was the wrong persons finger.',
+          const Duration(seconds: 3),
+        );
+        return;
+      }
+
+      _awardPoints();
+      _completeActiveChallenge();
+
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+
+    case null:
+    case AuthCancelled():
+    case AuthFailed():
+      break; // Nothing to do
+  }
+}
 
   @override
   Widget build(BuildContext context) {

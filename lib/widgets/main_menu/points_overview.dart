@@ -48,7 +48,8 @@ class _PointsOverviewState extends State<PointsOverview> {
         ),
         child: Column(
           children: [
-            Expanded(
+            Align(
+              child: Expanded(
               flex: 1,
               child: outlinedText(
                   'Points',
@@ -61,7 +62,8 @@ class _PointsOverviewState extends State<PointsOverview> {
                     context,
                   ).textTheme.headlineMedium!.fontFamily!,
                 ),
-            ),
+            ),),
+            
             Expanded(
               flex: 2,
               child: Column(

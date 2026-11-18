@@ -9,6 +9,7 @@ import 'package:couple_gacha/persistence_logic/rewards.dart';
 import 'package:couple_gacha/widgets/dialogs/redeem_reward.dart';
 import 'package:couple_gacha/widgets/rewards/reward_element.dart';
 import 'package:couple_gacha/widgets/util/outlined_text.dart';
+import 'package:couple_gacha/widgets/util/select_and_return_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +67,9 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _subscription ??= InputSourceProvider.of(context).inputSource.events.listen(_inputProcessor);
+    _subscription ??= InputSourceProvider.of(
+      context,
+    ).inputSource.events.listen(_inputProcessor);
 
     final headlineStyle = Theme.of(context).textTheme.headlineMedium!;
     final bodyStyle = Theme.of(context).textTheme.bodyMedium!;
@@ -144,10 +147,12 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
         break;
 
       case NavInput.down:
-        if (_highlightedElementIndex >= _activePlayerRewardIds.length - 2) return;
+        if (_highlightedElementIndex >= _activePlayerRewardIds.length - 2)
+          return;
         _setHighlightedElement(_highlightedElementIndex + 2);
         _activeRow++;
-        if (_scrollController.position.maxScrollExtent != _scrollController.offset &&
+        if (_scrollController.position.maxScrollExtent !=
+                _scrollController.offset &&
             _bottomRow == _activeRow) {
           _scrollOneRow(_rowHeight, ScrollDirection.up);
         }
@@ -163,12 +168,15 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
         break;
 
       case NavInput.right:
-        if (_highlightedElementIndex == _activePlayerRewardIds.length - 1) return;
-        if (_highlightedElementIndex != 0 && _highlightedElementIndex % 2 != 0) {
+        if (_highlightedElementIndex == _activePlayerRewardIds.length - 1)
+          return;
+        if (_highlightedElementIndex != 0 &&
+            _highlightedElementIndex % 2 != 0) {
           _activeRow++;
         }
         _setHighlightedElement(_highlightedElementIndex + 1);
-        if (_scrollController.position.maxScrollExtent != _scrollController.offset &&
+        if (_scrollController.position.maxScrollExtent !=
+                _scrollController.offset &&
             _bottomRow == _activeRow) {
           _scrollOneRow(_rowHeight, ScrollDirection.up);
         }
@@ -188,17 +196,19 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
     if (_activePlayerRewardIds.isEmpty) return;
 
     final rewardId = _activePlayerRewardIds[_highlightedElementIndex];
-    final result = await RedeemReward.open(context, rewardId, widget.activePlayerId);
+    final result = await RedeemReward.open(
+      context,
+      rewardId,
+      widget.activePlayerId,
+    );
     if (!mounted || result != true) return;
 
-    final rewards = _rewardsOfActivePlayer;
-    if (!rewards.containsKey(rewardId)) return;
+    if (!playerRewards.removeReward(widget.activePlayerId, rewardId)) return;
 
-    final newAmount = rewards[rewardId]! - 1;
-    if (newAmount > 0) {
-      // Amount-only change: rebuild is cheap here, but we still need it
-      // because RewardCell reads rewardAmount from the parent.
-      setState(() => rewards[rewardId] = newAmount);
+    _rewardsOfActivePlayer = playerRewards.rewardsOf(widget.activePlayerId);
+
+    if (_rewardsOfActivePlayer.containsKey(rewardId)) {
+      setState(() {});
       return;
     }
 
@@ -208,7 +218,6 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
 
     final wasHighlighted = removedIndex == _highlightedElementIndex;
 
-    rewards.remove(rewardId);
     _activePlayerRewardIds.removeAt(removedIndex);
     _highlightNotifiers.removeAt(removedIndex).dispose();
 
@@ -231,7 +240,8 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
     final screenDiagonal = sqrt(
-      screenSize.width * screenSize.width + screenSize.height * screenSize.height,
+      screenSize.width * screenSize.width +
+          screenSize.height * screenSize.height,
     );
     final columnWidth = screenSize.width / 2;
     final fontScalingFactor = screenDiagonal * 0.001;
@@ -280,6 +290,12 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
                 );
               },
             ),
+          ),
+          SelectAndReturnInfo.twoOptions(
+            firstButtonAsset: 'assets/green_button.svg',
+            firstActionText: 'to redeem',
+            secondButtonAsset: 'assets/red_button.svg',
+            secondActionText: 'to return',
           ),
         ],
       ),
@@ -338,7 +354,9 @@ class RewardCell extends StatelessWidget {
                   screenDiagonal: screenDiagonal,
                   width: width,
                   height: height,
-                  borderColor: isHighlighted ? Colors.white : rewardData.rarity.borderColor,
+                  borderColor: isHighlighted
+                      ? Colors.white
+                      : rewardData.rarity.borderColor,
                   fillColor: rewardData.rarity.fillColor,
                   rotate: false,
                   scroll: isHighlighted,
