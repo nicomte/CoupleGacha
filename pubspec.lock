@@ -58,7 +58,7 @@ packages:
     source: hosted
     version: "1.19.1"
   dart_periphery:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: dart_periphery
       sha256: "1c933dae787d65e6e66ee89db4a58ed74dc9213b83cea10c344585a256ca498a"
@@ -166,7 +166,7 @@ packages:
   m5_fpc1020a:
     dependency: "direct main"
     description:
-      path: "../m5_fpc1020a_dart"
+      path: "../FPC1020A/m5_fpc1020a_dart"
       relative: true
     source: path
     version: "0.1.0"
