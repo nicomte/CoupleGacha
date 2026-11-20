@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:couple_gacha/navigation/input_source.dart';
+import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:dart_periphery/dart_periphery.dart';
+import 'package:flutter/material.dart';
 
 class SensorInputSource implements InputSource {
   final int _addr = 0x63;
@@ -10,23 +12,29 @@ class SensorInputSource implements InputSource {
   final int _offset12bitRegister = 0x50;
   final int _deadzone = 2000;
 
-  late final StreamController<NavInput> _controller;
-  late final I2C _i2c;
-  late final Timer _timer;
+  late StreamController<NavInput> _controller;
+  late I2C _i2c;
+  late Timer _timer;
   NavInput? _lastInput;
 
-  SensorInputSource() {
+  SensorInputSource(BuildContext context) {
     _controller = StreamController<NavInput>.broadcast(
       onListen: () {
         try {
+
           print('Creating I2C connection');
           _i2c = I2C(1);
           var firmwareVersion = _i2c.readByteReg(_addr, _firmwareRegister);
+          _timer = Timer.periodic(Duration(milliseconds: 50), _watchJoystick);
           print('Firmware version: $firmwareVersion');
+
         } on I2Cexception catch (e) {
+
+          if (!context.mounted) {return;}
+          WarningPopup.show(context,'Failed to connect joystick. Check hardware or restart.',Duration(seconds: 3));
           print('Error Code: ${e.errorCode} - Error Message: ${e.errorMsg}');
+
         }
-        _timer = Timer.periodic(Duration(milliseconds: 50), _watchJoystick);
       },
 
       onCancel: () {
@@ -52,9 +60,7 @@ class SensorInputSource implements InputSource {
       _controller.add(currentInput);
     }
 
-    if (_lastInput != currentInput) {
-      _lastInput = currentInput;
-    }
+    _lastInput = currentInput;
   }
 
   Point<int> _pollJoystick() {

@@ -25,7 +25,7 @@ class MainApp extends StatelessWidget {
         theme: AppTheme.colorTheme,
         navigatorObservers: [routeObserver],
         home: InputSourceProvider(
-          inputSource: SensorInputSource(),
+          inputSource: SensorInputSource(context),
           child: MainMenu(),
         ),
       ),
