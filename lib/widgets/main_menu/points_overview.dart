@@ -9,7 +9,7 @@ class PointsOverview extends StatefulWidget {
   const PointsOverview({
     super.key,
     required this.screenSize,
-    required this.screenDiagonal
+    required this.screenDiagonal,
   });
 
   @override
@@ -32,74 +32,94 @@ class _PointsOverviewState extends State<PointsOverview> {
         clipBehavior: Clip.antiAlias,
         width: pointsContainerSize.width,
         height: pointsContainerSize.height,
+        // "Border" layer: same colour and shape as before
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
-          border: Border(
-            top: BorderSide(
-              color: Theme.of(context).colorScheme.tertiary,
-              width: 10,
-            ),
-            left: BorderSide(
-              color: Theme.of(context).colorScheme.tertiary,
-              width: 10,
-            ),
-          ),
+          color: Theme.of(context).colorScheme.tertiary,
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(50)),
         ),
-        child: Column(
+        child: Stack(
           children: [
-            Align(
-              child: Expanded(
-              flex: 1,
-              child: outlinedText(
-                  'Points',
-                  fontSize: Theme.of(
-                    context,
-                  ).textTheme.headlineMedium!.fontSize! * fontSizeFactor,
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  textColor: Theme.of(context).textTheme.headlineMedium!.color!,
-                  fontFamily: Theme.of(
-                    context,
-                  ).textTheme.headlineMedium!.fontFamily!,
+            // Fill layer, inset by the old border width
+            Positioned.fill(
+              top: 10,
+              left: 10,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  // 50 - 10, so the curves stay concentric like a real border
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                  ),
                 ),
-            ),),
-            
-            Expanded(
-              flex: 2,
+              ),
+            ),
+            // Content layer: full height, only inset on the left
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ...playerStore.players.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final user = entry.value.playerName;
-                    final points = entry.value.points;
-                    return Expanded(
-                      child: Container(
-                        color: index % 2 == 0
-                            ? Theme.of(context).colorScheme.secondary
-                            : null,
-                        alignment: Alignment.center,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: outlinedText(
-                            '$user - $points Points',
-                            fontSize: Theme.of(
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                      child: outlinedText(
+                        'Points',
+                        fontSize:
+                            Theme.of(
                               context,
-                            ).textTheme.bodyMedium!.fontSize! * fontSizeFactor,
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.tertiary,
-                            textColor: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium!.color!,
-                            fontFamily: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium!.fontFamily!,
-                          ),
-                        ),
+                            ).textTheme.headlineMedium!.fontSize! *
+                            fontSizeFactor,
+                        backgroundColor: Theme.of(context).colorScheme.tertiary,
+                        textColor: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium!.color!,
+                        fontFamily: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium!.fontFamily!,
                       ),
-                    );
-                  }),
+                    ),
+                  ),
+
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ...playerStore.players.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final user = entry.value.playerName;
+                          final points = entry.value.points;
+                          return Expanded(
+                            child: Container(
+                              color: index % 2 == 0
+                                  ? Theme.of(context).colorScheme.secondary
+                                  : null,
+                              alignment: Alignment.center,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: outlinedText(
+                                  '$user - $points Points',
+                                  fontSize:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium!.fontSize! *
+                                      fontSizeFactor,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.tertiary,
+                                  textColor: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium!.color!,
+                                  fontFamily: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium!.fontFamily!,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

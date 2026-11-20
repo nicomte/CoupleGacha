@@ -5,90 +5,60 @@ import 'package:couple_gacha/navigation/input_source.dart';
 import 'package:dart_periphery/dart_periphery.dart';
 
 class SensorInputSource implements InputSource {
-  final int addr = 0x63;
-  final int firmwareRegister = 0xFE;
-  final int offset12bitRegister = 0x50;
-  final int deadzone = 2000;
-  bool timerActive = false;
+  final int _addr = 0x63;
+  final int _firmwareRegister = 0xFE;
+  final int _offset12bitRegister = 0x50;
+  final int _deadzone = 2000;
 
   late final StreamController<NavInput> _controller;
-  late final I2C i2c;
-  NavInput? lastValidInput;
+  late final I2C _i2c;
+  late final Timer _timer;
+  NavInput? _lastInput;
 
   SensorInputSource() {
-    try {
-      print('Creating I2C connection');
-      i2c = I2C(1);
-      var firmwareVersion = i2c.readByteReg(addr, firmwareRegister);
-      print('Firmware version: $firmwareVersion');
-    } on I2Cexception catch (e) {
-      print('Error Code: ${e.errorCode} - Error Message: ${e.errorMsg}');
-    }
-
     _controller = StreamController<NavInput>.broadcast(
       onListen: () {
-        timerActive = true;
-        Timer.periodic(Duration(milliseconds: 50), (timer) {
-          Point joystickLocation = _pollJoystick();
-
-          print('x: ${joystickLocation.x} - y: ${joystickLocation.y}');
-
-          if (!_joystickOutsideDeadzone(joystickLocation)) {
-            lastValidInput = null;
-            return;
-          }
-
-          if (joystickLocation.x.abs() > joystickLocation.y.abs()) {
-            final NavInput currentInput = joystickLocation.x >= 0
-                ? NavInput.right
-                : NavInput.left;
-            if (lastValidInput == null) {
-              _controller.add(currentInput);
-              lastValidInput = currentInput;
-              print(currentInput);
-              return;
-            }
-            if (lastValidInput != currentInput) {
-              _controller.add(currentInput);
-              lastValidInput = currentInput;
-              print(currentInput);
-            }
-          } else if (joystickLocation.x.abs() < joystickLocation.y.abs()) {
-            final NavInput currentInput = joystickLocation.y >= 0
-                ? NavInput.up
-                : NavInput.down;
-            if (lastValidInput == null) {
-              _controller.add(currentInput);
-              lastValidInput = currentInput;
-              print(currentInput);
-              return;
-            }
-            if (lastValidInput != currentInput) {
-              _controller.add(currentInput);
-              lastValidInput = currentInput;
-              print(currentInput);
-            }
-          } else {
-            return;
-          }
-
-          if (!timerActive) {
-            timer.cancel();
-          }
-        });
+        try {
+          print('Creating I2C connection');
+          _i2c = I2C(1);
+          var firmwareVersion = _i2c.readByteReg(_addr, _firmwareRegister);
+          print('Firmware version: $firmwareVersion');
+        } on I2Cexception catch (e) {
+          print('Error Code: ${e.errorCode} - Error Message: ${e.errorMsg}');
+        }
+        _timer = Timer.periodic(Duration(milliseconds: 50), _watchJoystick);
       },
 
       onCancel: () {
         if (!_controller.hasListener) {
-          timerActive = false;
-          i2c.dispose();
+          _timer.cancel();
+          _i2c.dispose();
         }
       },
     );
   }
 
-  Point _pollJoystick() {
-    final data = i2c.readBytesReg(addr, offset12bitRegister, 4);
+  void _watchJoystick(_) {
+    Point<int> joystickLocation = _pollJoystick();
+
+    if (!_joystickOutsideDeadzone(joystickLocation)) {
+      _lastInput = null;
+      return;
+    }
+
+    final currentInput = _getCurrentInput(joystickLocation);
+
+    if (_lastInput != currentInput && currentInput != null) {
+      _controller.add(currentInput);
+    }
+
+    if (_lastInput != currentInput) {
+      _lastInput = currentInput;
+    }
+  }
+
+  Point<int> _pollJoystick() {
+    final data = _i2c.readBytesReg(_addr, _offset12bitRegister, 4);
 
     final x = (data[0] | (data[1] << 8)).toSigned(16);
     final y = -(data[2] | (data[3] << 8)).toSigned(
@@ -99,8 +69,18 @@ class SensorInputSource implements InputSource {
   }
 
   bool _joystickOutsideDeadzone(Point joystickLocation) {
-    return joystickLocation.x.abs() > deadzone ||
-        joystickLocation.y.abs() > deadzone;
+    return joystickLocation.x.abs() > _deadzone ||
+        joystickLocation.y.abs() > _deadzone;
+  }
+
+  NavInput? _getCurrentInput(Point<int> joystickLocation) {
+    if (joystickLocation.x.abs() > joystickLocation.y.abs()) {
+      return joystickLocation.x >= 0 ? NavInput.right : NavInput.left;
+    } else if (joystickLocation.x.abs() < joystickLocation.y.abs()) {
+      return joystickLocation.y >= 0 ? NavInput.up : NavInput.down;
+    } else {
+      return null;
+    }
   }
 
   @override
@@ -109,7 +89,5 @@ class SensorInputSource implements InputSource {
   @override
   Future<void> dispose() async {
     await _controller.close();
-    timerActive = false;
-    i2c.dispose();
   }
 }
