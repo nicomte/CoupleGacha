@@ -6,12 +6,21 @@ class Reward {
   final int id;
   final String text;
   final Rarity rarity;
+  final int? exclusiveRewardOf;
 
-  const Reward({required this.id, required this.text, required this.rarity});
+  const Reward({
+    required this.id,
+    required this.text,
+    required this.rarity,
+    this.exclusiveRewardOf,
+  });
+
+  bool isAvailableTo(int playerId) =>
+      exclusiveRewardOf == null || exclusiveRewardOf == playerId;
 }
 
 enum Rarity {
-  loss(50,Color(0xfffae8ed), Color(0xffff4a98)),
+  loss(50, Color(0xfffae8ed), Color(0xffff4a98)),
   common(20, Color(0xff5edc1f), Color.fromARGB(255, 176, 248, 137)),
   uncommon(15, Color(0xff1a43bf), Color.fromARGB(255, 162, 184, 255)),
   rare(10, Color(0xffb026ff), Color.fromARGB(255, 218, 165, 255)),
@@ -33,7 +42,9 @@ class RewardCatalog {
   /// Returns the reward with [id]. Throws if it doesn't exist.
   static Reward getById(int id) {
     final reward = _byId[id];
-    if (reward == null) throw ArgumentError.value(id, 'id', 'Unknown reward id');
+    if (reward == null) {
+      throw ArgumentError.value(id, 'id', 'Unknown reward id');
+    }
     return reward;
   }
 
@@ -111,25 +122,34 @@ class RewardRoller {
 
   static final Random _random = Random();
 
-  static List<int> roll(int amount) {
+  static List<int> roll(int amount, int playerId) {
+    // Build the eligible pool once per roll, grouped by rarity.
+    final pool = <Rarity, List<int>>{};
+    for (final reward in RewardCatalog.all) {
+      if (!reward.isAvailableTo(playerId)) continue;
+      pool.putIfAbsent(reward.rarity, () => []).add(reward.id);
+    }
+
+    if (pool.isEmpty) return const [];
+
     final rolled = <int>[];
     for (int i = 0; i < amount; i++) {
-      final rarity = _pickRarity();
-      final candidates = RewardCatalog.byRarity[rarity] ?? const [];
-      if (candidates.isEmpty) continue;
+      final rarity = _pickRarity(pool.keys);
+      final candidates = pool[rarity]!;
       rolled.add(candidates[_random.nextInt(candidates.length)]);
     }
     return rolled;
   }
 
-  static Rarity _pickRarity() {
-    final totalWeight = Rarity.values.fold<int>(0, (sum, r) => sum + r.weight);
+  /// Weighted pick among only the rarities that have eligible rewards.
+  static Rarity _pickRarity(Iterable<Rarity> available) {
+    final totalWeight = available.fold<int>(0, (sum, r) => sum + r.weight);
     final diceRoll = _random.nextInt(totalWeight);
     int cumulative = 0;
-    for (final rarity in Rarity.values) {
+    for (final rarity in available) {
       cumulative += rarity.weight;
       if (diceRoll < cumulative) return rarity;
     }
-    return Rarity.values.last; // unreachable
+    return available.last; // unreachable
   }
 }

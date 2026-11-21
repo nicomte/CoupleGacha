@@ -103,7 +103,7 @@ class _RedeemPointsState extends State<RedeemPoints> with RouteAware, SingleTick
         } else {
           playerStore.subtractPoints(widget.activePlayerId, _pointCost);
 
-          final List<int> rewards = RewardRoller.roll(_pointCost == 1 ? 1 : 10);
+          final List<int> rewards = RewardRoller.roll(_pointCost == 1 ? 1 : 10, widget.activePlayerId);
 
           playerRewards.addRewards(widget.activePlayerId, rewards);
           
