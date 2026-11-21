@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class Challenge {
   const Challenge({
     required this.challengeId,
@@ -52,3 +54,13 @@ final challenges = [
     challengeCategory: ChallengeCategory.activity.category()
   ),
 ];
+
+List<Challenge> pickRandomChallenges(
+  int count, {
+  List<Challenge>? pool,
+  Random? random,
+}) {
+  final shuffled = List<Challenge>.of(pool ?? challenges)
+    ..shuffle(random ?? Random());
+  return shuffled.take(count).toList();
+}

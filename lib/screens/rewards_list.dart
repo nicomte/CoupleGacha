@@ -147,8 +147,9 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
         break;
 
       case NavInput.down:
-        if (_highlightedElementIndex >= _activePlayerRewardIds.length - 2)
+        if (_highlightedElementIndex >= _activePlayerRewardIds.length - 2) {
           return;
+        }
         _setHighlightedElement(_highlightedElementIndex + 2);
         _activeRow++;
         if (_scrollController.position.maxScrollExtent !=
@@ -168,8 +169,9 @@ class _RewardsListState extends State<RewardsList> with RouteAware {
         break;
 
       case NavInput.right:
-        if (_highlightedElementIndex == _activePlayerRewardIds.length - 1)
+        if (_highlightedElementIndex == _activePlayerRewardIds.length - 1) {
           return;
+        }
         if (_highlightedElementIndex != 0 &&
             _highlightedElementIndex % 2 != 0) {
           _activeRow++;

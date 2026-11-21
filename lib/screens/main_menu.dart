@@ -20,6 +20,7 @@ import 'package:couple_gacha/widgets/main_menu/rotating_menu/assets_index.dart';
 import 'package:couple_gacha/widgets/main_menu/rotating_menu/rotating_menu.dart';
 import 'package:couple_gacha/widgets/util/warning_popup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -31,6 +32,8 @@ class MainMenu extends StatefulWidget {
 class _MainMenuState extends State<MainMenu> with RouteAware {
   StreamSubscription<NavInput>? _subscription;
   DateTime? _lastInputTime;
+  late final Future<void> _ready;
+  bool _readyStarted = false;
 
   ({int menuOffset, RotationDirection rotationDirection}) _rotatingMenuData = (
     menuOffset: 0,
@@ -45,11 +48,38 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
     _subscription ??= InputSourceProvider.of(
       context,
     ).inputSource.events.listen(_inputProcessor);
+
     routeObserver.subscribe(this, ModalRoute.of(context)!);
+
+    if (!_readyStarted) {
+      _readyStarted = true;
+      _ready = _preload();
+    }
   }
+
+  Future<void> _preload() async {
+    await Future.wait([
+      // Replace with however AssetsIndex exposes its image paths
+      for (final item in AssetsIndex.menuItems)
+        precachePicture(item.assetPath)
+      // Add any other futures here (e.g. loading challenges/players from storage)
+    ]);
+
+    // Optionally wait one frame so the widgets have actually painted
+    await WidgetsBinding.instance.endOfFrame;
+  }
+
+  Future<void> precachePicture(String assetPath) {
+  final loader = SvgAssetLoader(assetPath);
+  return svg.cache.putIfAbsent(
+    loader.cacheKey(null),
+    () => loader.loadBytes(null),
+  );
+}
 
   @override
   void dispose() {
@@ -82,7 +112,9 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.counterClockwise);
           } else {
-            if (activeChallenges.length>1)  _activeChallengeHighlighted = _toggleActiveChallenge();
+            if (activeChallenges.length > 1) {
+              _activeChallengeHighlighted = _toggleActiveChallenge();
+            }
           }
         });
         break;
@@ -92,7 +124,9 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
           if (_activeMenu == ActiveMenu.rotatingMenu) {
             _rotateMenu(direction: RotationDirection.clockwise);
           } else {
-            if (activeChallenges.length>1)  _activeChallengeHighlighted = _toggleActiveChallenge();
+            if (activeChallenges.length > 1) {
+              _activeChallengeHighlighted = _toggleActiveChallenge();
+            }
           }
         });
         break;
@@ -177,8 +211,13 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   void _selectRotatingMenuItem() {
     final menuItem = _activeRotatingMenuItem();
 
-    if (menuItem != MainMenuItem.playerSettings && playerStore.players.length < 2 ){
-      WarningPopup.show(context, 'Add at least two players first.', Duration(seconds: 5));
+    if (menuItem != MainMenuItem.playerSettings &&
+        playerStore.players.length < 2) {
+      WarningPopup.show(
+        context,
+        'Add at least two players first.',
+        Duration(seconds: 5),
+      );
       return;
     }
 
@@ -202,21 +241,28 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   }
 
   Future<void> _redeemChallenge() async {
-
-    if (playerStore.players.length < 2 ){
-      WarningPopup.show(context, 'Add at least two players first.', Duration(seconds: 5));
+    if (playerStore.players.length < 2) {
+      WarningPopup.show(
+        context,
+        'Add at least two players first.',
+        Duration(seconds: 5),
+      );
       return;
     }
 
-
-    final activeChallenge = activeChallenges.entries.toList()[_activeChallengeHighlighted];
-    final challengeFinished = await ConfirmChallengeSuccess.open(context, activeChallenge.value, activeChallenge.key);
-        if (challengeFinished!=null && challengeFinished) {
-          setState(() {
-            _activeMenu = ActiveMenu.rotatingMenu;
-            _activeChallengeHighlighted = 0;
-          });
-        }  
+    final activeChallenge = activeChallenges.entries
+        .toList()[_activeChallengeHighlighted];
+    final challengeFinished = await ConfirmChallengeSuccess.open(
+      context,
+      activeChallenge.value,
+      activeChallenge.key,
+    );
+    if (challengeFinished != null && challengeFinished) {
+      setState(() {
+        _activeMenu = ActiveMenu.rotatingMenu;
+        _activeChallengeHighlighted = 0;
+      });
+    }
   }
 
   Future<void> _openCheckRewards() async {
@@ -244,11 +290,9 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   }
 
   void _openPlayerSettings() {
-    Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => UserSettings(),
-          ),
-        );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => UserSettings()));
   }
 
   Future<void> _openRedeemPoints() async {
@@ -273,7 +317,6 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
         // Nothing to do
         break;
     }
-
   }
 
   Future<void> _openSelectChallenge() async {
@@ -304,29 +347,48 @@ class _MainMenuState extends State<MainMenu> with RouteAware {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    final screenDiagonal = sqrt(pow(screenSize.width, 2) + pow(screenSize.height, 2));
+    final screenDiagonal = sqrt(
+      pow(screenSize.width, 2) + pow(screenSize.height, 2),
+    );
 
     return Scaffold(
-      body: Stack(
-        children: [
-          RotatingMenu(
-            screenSize: screenSize,
-            screenDiagonal: screenDiagonal,
-            rotatingMenuData: _rotatingMenuData,
-            activeMenu: _activeMenu,
-          ),
+      body: FutureBuilder<void>(
+        future: _ready,
+        builder: (context, snapshot) {
+          final isReady = snapshot.connectionState == ConnectionState.done;
+          return Stack(
+            children: [
+              RotatingMenu(
+                screenSize: screenSize,
+                screenDiagonal: screenDiagonal,
+                rotatingMenuData: _rotatingMenuData,
+                activeMenu: _activeMenu,
+              ),
 
-          PointsOverview(
-            screenSize: screenSize,
-            screenDiagonal: screenDiagonal,
-          ),
+              PointsOverview(
+                screenSize: screenSize,
+                screenDiagonal: screenDiagonal,
+              ),
 
-          ChallengesList(
-            screenSize: screenSize,
-            activeChallenge: _activeChallengeHighlighted,
-            activeMenu: _activeMenu,
-          ),
-        ],
+              ChallengesList(
+                screenSize: screenSize,
+                activeChallenge: _activeChallengeHighlighted,
+                activeMenu: _activeMenu,
+              ),
+              IgnorePointer(
+                ignoring: isReady,
+                child: AnimatedOpacity(
+                  opacity: isReady ? 0 : 1,
+                  duration: const Duration(milliseconds: 300),
+                  child: ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

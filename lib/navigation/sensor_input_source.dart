@@ -11,82 +11,100 @@ class SensorInputSource implements InputSource {
   final int _firmwareRegister = 0xFE;
   final int _offset12bitRegister = 0x50;
   final int _deadzone = 2000;
+  final int _greenButtonGpio = 16;
 
-  late StreamController<NavInput> _controller;
-  late I2C _i2c;
-  late Timer _timer;
-  NavInput? _lastInput;
+  final StreamController<NavInput> _controller =
+      StreamController<NavInput>.broadcast();
 
-  SensorInputSource(BuildContext context) {
-    _controller = StreamController<NavInput>.broadcast(
-      onListen: () {
-        try {
+  I2C? _i2c;
+  GPIO? _greenButton;
+  Timer? _timer;
+  NavInput? _lastJoystickInput;
+  bool _greenButtonLastState = false;
 
-          print('Creating I2C connection');
-          _i2c = I2C(1);
-          var firmwareVersion = _i2c.readByteReg(_addr, _firmwareRegister);
-          _timer = Timer.periodic(Duration(milliseconds: 50), _watchJoystick);
-          print('Firmware version: $firmwareVersion');
-
-        } on I2Cexception catch (e) {
-
-          if (!context.mounted) {return;}
-          WarningPopup.show(context,'Failed to connect joystick. Check hardware or restart.',Duration(seconds: 3));
-          print('Error Code: ${e.errorCode} - Error Message: ${e.errorMsg}');
-
-        }
-      },
-
-      onCancel: () {
-        if (!_controller.hasListener) {
-          _timer.cancel();
-          _i2c.dispose();
-        }
-      },
-    );
+  SensorInputSource(this._navigatorKey) {
+    _start();
   }
 
-  void _watchJoystick(_) {
-    Point<int> joystickLocation = _pollJoystick();
+  final GlobalKey<NavigatorState> _navigatorKey;
 
-    if (!_joystickOutsideDeadzone(joystickLocation)) {
-      _lastInput = null;
+  void _start() {
+    try {
+      final config = GPIOconfig.defaultValues();
+      config.direction = GPIOdirection.gpioDirIn;
+      config.bias = GPIObias.gpioBiasPullUp;
+      _greenButton = GPIO.advanced(_greenButtonGpio, config);
+
+      _i2c = I2C(1);
+      final firmwareVersion = _i2c!.readByteReg(_addr, _firmwareRegister);
+      print('Firmware version: $firmwareVersion');
+
+      _timer = Timer.periodic(const Duration(milliseconds: 50), _watchSensors);
+    } on I2Cexception catch (e) {
+      final ctx = _navigatorKey.currentContext;
+      if (ctx != null && ctx.mounted) {
+        WarningPopup.show(
+          ctx,
+          'Failed to connect joystick. Check hardware or restart.',
+          const Duration(seconds: 3),
+        );
+      }
+      print('Error Code: ${e.errorCode} - Error Message: ${e.errorMsg}');
+    }
+  }
+
+  void _watchSensors(Timer _) {
+    try {
+      _watchButtons();
+      _watchJoystick();
+    } catch (e) {
+      // Don't let a single bad read kill the polling timer
+      print('Sensor read failed: $e');
+    }
+  }
+
+  void _watchButtons() {
+    final pressed = !_greenButton!.read();
+
+    if (pressed && !_greenButtonLastState) {
+      _controller.add(NavInput.select);
+    }
+    _greenButtonLastState = pressed;
+  }
+
+  void _watchJoystick() {
+    final location = _pollJoystick();
+
+    if (!_joystickOutsideDeadzone(location)) {
+      _lastJoystickInput = null;
       return;
     }
 
-    final currentInput = _getCurrentInput(joystickLocation);
+    final currentInput = _getCurrentJoystickInput(location);
 
-    if (_lastInput != currentInput && currentInput != null) {
+    if (currentInput != null && currentInput != _lastJoystickInput) {
       _controller.add(currentInput);
     }
-
-    _lastInput = currentInput;
+    _lastJoystickInput = currentInput;
   }
 
   Point<int> _pollJoystick() {
-    final data = _i2c.readBytesReg(_addr, _offset12bitRegister, 4);
-
+    final data = _i2c!.readBytesReg(_addr, _offset12bitRegister, 4);
     final x = (data[0] | (data[1] << 8)).toSigned(16);
-    final y = -(data[2] | (data[3] << 8)).toSigned(
-      16,
-    ); // negated: up = positive
-
+    final y = -(data[2] | (data[3] << 8)).toSigned(16);
     return Point(x, y);
   }
 
-  bool _joystickOutsideDeadzone(Point joystickLocation) {
-    return joystickLocation.x.abs() > _deadzone ||
-        joystickLocation.y.abs() > _deadzone;
-  }
+  bool _joystickOutsideDeadzone(Point<int> p) =>
+      p.x.abs() > _deadzone || p.y.abs() > _deadzone;
 
-  NavInput? _getCurrentInput(Point<int> joystickLocation) {
-    if (joystickLocation.x.abs() > joystickLocation.y.abs()) {
-      return joystickLocation.x >= 0 ? NavInput.right : NavInput.left;
-    } else if (joystickLocation.x.abs() < joystickLocation.y.abs()) {
-      return joystickLocation.y >= 0 ? NavInput.up : NavInput.down;
-    } else {
-      return null;
+  NavInput? _getCurrentJoystickInput(Point<int> p) {
+    if (p.x.abs() > p.y.abs()) {
+      return p.x >= 0 ? NavInput.right : NavInput.left;
+    } else if (p.x.abs() < p.y.abs()) {
+      return p.y >= 0 ? NavInput.up : NavInput.down;
     }
+    return null;
   }
 
   @override
@@ -94,6 +112,9 @@ class SensorInputSource implements InputSource {
 
   @override
   Future<void> dispose() async {
+    _timer?.cancel();
+    _i2c?.dispose();
+    _greenButton?.dispose();
     await _controller.close();
   }
 }

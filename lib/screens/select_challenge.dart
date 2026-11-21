@@ -26,6 +26,13 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
   StreamSubscription<NavInput>? _subscription;
   bool _acceptsInput = true;
   int _activeChallengeIndex = 0;
+  late final List<Challenge> _choices;
+
+  @override
+  void initState() {
+    super.initState();
+    _choices = pickRandomChallenges(widget.numberOfChoices);
+  }
 
   @override
   void didChangeDependencies() {
@@ -52,66 +59,67 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
   }
 
   Future<void> _inputProcessor(NavInput input) async {
-  if (!_acceptsInput) return;
+    print(input);
+    if (!_acceptsInput) return;
 
-  switch (input) {
-    case NavInput.back:
-      Navigator.of(context).pop();
-      break;
-    case NavInput.up:
-    case NavInput.down:
-      // Nothing to do
-      break;
-    case NavInput.left:
-      _decreaseIndex();
-      break;
-    case NavInput.right:
-      _increaseIndex();
-      break;
-    case NavInput.select:
-      await _handleSelect();
-      break;
+    switch (input) {
+      case NavInput.back:
+        Navigator.of(context).pop();
+        break;
+      case NavInput.up:
+      case NavInput.down:
+        // Nothing to do
+        break;
+      case NavInput.left:
+        _decreaseIndex();
+        break;
+      case NavInput.right:
+        _increaseIndex();
+        break;
+      case NavInput.select:
+        await _handleSelect();
+        break;
+    }
   }
-}
 
-Future<void> _handleSelect() async {
-  if (activeChallenges.hasActiveChallenge(widget.activePlayerId)) {
-    final result = await ReplaceActiveChallenge.open(
+  Future<void> _handleSelect() async {
+    if (activeChallenges.hasActiveChallenge(widget.activePlayerId)) {
+      final result = await ReplaceActiveChallenge.open(
+        context,
+        activeChallenges.challengeOf(widget.activePlayerId)!,
+      );
+      if (result != true) return;
+      if (!mounted) return;
+    }
+
+    await _revealChallengeAndClose();
+  }
+
+  Future<void> _revealChallengeAndClose() async {
+    await RevealChallenge.open(
       context,
-      activeChallenges.challengeOf(widget.activePlayerId)!
+      _choices[_activeChallengeIndex],
+      widget.activePlayerId,
     );
-    if (result != true) return;
     if (!mounted) return;
+
+    _acceptsInput = false;
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
-
-  await _revealChallengeAndClose();
-}
-
-Future<void> _revealChallengeAndClose() async {
-  await RevealChallenge.open(
-    context,
-    challenges[_activeChallengeIndex],
-    widget.activePlayerId,
-  );
-  if (!mounted) return;
-
-  _acceptsInput = false;
-  await Future.delayed(const Duration(milliseconds: 300));
-  if (!mounted) return;
-  Navigator.of(context).pop();
-}
 
   void _increaseIndex() {
     setState(() {
       _activeChallengeIndex =
-          (_activeChallengeIndex + 1) % widget.numberOfChoices;
+          (_activeChallengeIndex + 1) % _choices.length;
     });
   }
 
   void _decreaseIndex() {
     setState(() {
       _activeChallengeIndex =
-          (_activeChallengeIndex - 1) % widget.numberOfChoices;
+          (_activeChallengeIndex - 1) % _choices.length;
     });
   }
 
@@ -128,7 +136,7 @@ Future<void> _revealChallengeAndClose() async {
             flex: 4,
             child: Row(
               children: [
-                ...challenges.asMap().entries.map(
+                ..._choices.asMap().entries.map(
                   (entry) => Expanded(
                     child: ChallengeElement(
                       isHighlighted: entry.key == _activeChallengeIndex
