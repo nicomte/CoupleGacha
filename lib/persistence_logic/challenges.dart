@@ -5,13 +5,18 @@ class Challenge {
     required this.challengeId,
     required this.challengeText,
     required this.challengePoints,
-    required this.challengeCategory
+    required this.challengeCategory,
+    this.exclusivePlayerId,
   });
 
   final int challengeId;
   final String challengeText;
   final int challengePoints;
   final String challengeCategory;
+  final int? exclusivePlayerId; // null = available to everyone
+
+  bool isAvailableTo(int playerId) =>
+      exclusivePlayerId == null || exclusivePlayerId == playerId;
 }
 
 enum ChallengeCategory {
@@ -20,8 +25,8 @@ enum ChallengeCategory {
   activity,
   creative;
 
-  String category(){
-    switch(this){
+  String category() {
+    switch (this) {
       case ChallengeCategory.game:
         return 'Games';
       case ChallengeCategory.question:
@@ -39,28 +44,30 @@ final challenges = [
     challengeId: 1,
     challengeText: 'Beat Tree Sentinel without levelling up.',
     challengePoints: 100,
-    challengeCategory: ChallengeCategory.game.category()
+    challengeCategory: ChallengeCategory.game.category(),
   ),
   Challenge(
     challengeId: 2,
     challengeText: 'Write Story about Partner with theme Medieval',
     challengePoints: 50,
-    challengeCategory: ChallengeCategory.creative.category()
+    challengeCategory: ChallengeCategory.creative.category(),
   ),
-    Challenge(
+  Challenge(
     challengeId: 3,
     challengeText: 'Plan walk to location.',
     challengePoints: 5,
-    challengeCategory: ChallengeCategory.activity.category()
+    challengeCategory: ChallengeCategory.activity.category(),
   ),
 ];
 
 List<Challenge> pickRandomChallenges(
-  int count, {
+  int count,
+  int playerId, {
   List<Challenge>? pool,
   Random? random,
 }) {
-  final shuffled = List<Challenge>.of(pool ?? challenges)
-    ..shuffle(random ?? Random());
-  return shuffled.take(count).toList();
+  final eligible =
+      (pool ?? challenges).where((c) => c.isAvailableTo(playerId)).toList()
+        ..shuffle(random ?? Random());
+  return eligible.take(count).toList();
 }

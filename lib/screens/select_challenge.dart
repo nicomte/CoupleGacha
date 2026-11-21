@@ -31,7 +31,10 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
   @override
   void initState() {
     super.initState();
-    _choices = pickRandomChallenges(widget.numberOfChoices);
+    _choices = pickRandomChallenges(
+      widget.numberOfChoices,
+      widget.activePlayerId,
+    );
   }
 
   @override
@@ -111,15 +114,13 @@ class _SelectChallengeState extends State<SelectChallenge> with RouteAware {
 
   void _increaseIndex() {
     setState(() {
-      _activeChallengeIndex =
-          (_activeChallengeIndex + 1) % _choices.length;
+      _activeChallengeIndex = (_activeChallengeIndex + 1) % _choices.length;
     });
   }
 
   void _decreaseIndex() {
     setState(() {
-      _activeChallengeIndex =
-          (_activeChallengeIndex - 1) % _choices.length;
+      _activeChallengeIndex = (_activeChallengeIndex - 1) % _choices.length;
     });
   }
 
