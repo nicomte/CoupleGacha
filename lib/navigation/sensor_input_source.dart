@@ -111,7 +111,7 @@ class SensorInputSource implements InputSource {
     if (p.x.abs() > p.y.abs()) {
       return p.x >= 0 ? NavInput.right : NavInput.left;
     } else if (p.x.abs() < p.y.abs()) {
-      return p.y >= 0 ? NavInput.up : NavInput.down;
+      return p.y >= 0 ? NavInput.down : NavInput.up;
     }
     return null;
   }

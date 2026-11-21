@@ -168,13 +168,18 @@ class _GachaRevealState extends State<GachaReveal>
           child: child!,
         );
       },
-      child: RewardElement(
-        rewardText: reward.text,
-        borderColor: reward.rarity.borderColor,
-        fillColor: reward.rarity.fillColor,
-        screenDiagonal: screenDiagonal,
-        width: width,
-        height: height,
+      // Rotated visual size: `height` wide, `width` tall.
+      child: SizedBox(
+        width: height,
+        height: width,
+        child: RewardElement(
+          rewardText: reward.text,
+          borderColor: reward.rarity.borderColor,
+          fillColor: reward.rarity.fillColor,
+          screenDiagonal: screenDiagonal,
+          width: width,
+          height: height,
+        ),
       ),
     );
   }
@@ -186,7 +191,7 @@ class _GachaRevealState extends State<GachaReveal>
       pow(screenSize.width, 2) + pow(screenSize.height, 2),
     );
     final height = screenSize.width / 18;
-    final width = screenSize.height * 0.85;
+    final width = screenSize.height * 0.75;
 
     final Widget footer = SelectAndReturnInfo.singleOption(
       buttonAsset: 'assets/green_button.svg',
@@ -241,10 +246,9 @@ class _GachaRevealState extends State<GachaReveal>
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // topOffset centers `width` (the element's *visual* height,
-                  // note the swapped naming) within whatever space is actually
-                  // left after the footer — not the full screen.
-                  final topOffset = (constraints.maxHeight - width) / 2 + 24.0;
+                  // Matches the reveal phase, which centers in the area below
+                  // a 24px top padding (so the center shifts down by 12).
+                  final topOffset = (constraints.maxHeight - width) / 2 + 12.0;
 
                   return Stack(
                     children: [
