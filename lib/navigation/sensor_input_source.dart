@@ -12,15 +12,18 @@ class SensorInputSource implements InputSource {
   final int _offset12bitRegister = 0x50;
   final int _deadzone = 2000;
   final int _greenButtonGpio = 16;
+  final int _redButtonGpio = 5;
 
   final StreamController<NavInput> _controller =
       StreamController<NavInput>.broadcast();
 
   I2C? _i2c;
   GPIO? _greenButton;
+  GPIO? _redButton;
   Timer? _timer;
   NavInput? _lastJoystickInput;
   bool _greenButtonLastState = false;
+  bool _redButtonLastState = false;
 
   SensorInputSource(this._navigatorKey) {
     _start();
@@ -34,6 +37,7 @@ class SensorInputSource implements InputSource {
       config.direction = GPIOdirection.gpioDirIn;
       config.bias = GPIObias.gpioBiasPullUp;
       _greenButton = GPIO.advanced(_greenButtonGpio, config);
+      _redButton = GPIO.advanced(_redButtonGpio, config);
 
       _i2c = I2C(1);
       final firmwareVersion = _i2c!.readByteReg(_addr, _firmwareRegister);
@@ -64,12 +68,17 @@ class SensorInputSource implements InputSource {
   }
 
   void _watchButtons() {
-    final pressed = !_greenButton!.read();
+    final greenButtonPressed = !_greenButton!.read();
+    final redButtonPressed = !_redButton!.read();
 
-    if (pressed && !_greenButtonLastState) {
+    if (greenButtonPressed && !_greenButtonLastState) {
       _controller.add(NavInput.select);
     }
-    _greenButtonLastState = pressed;
+    if (redButtonPressed && !_redButtonLastState) {
+      _controller.add(NavInput.back);
+    }
+    _greenButtonLastState = greenButtonPressed;
+    _redButtonLastState = redButtonPressed;
   }
 
   void _watchJoystick() {
